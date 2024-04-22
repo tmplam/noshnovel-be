@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.API", "NoshNovel.API\NoshNovel.API.csproj", "{28645DA2-94DE-438D-A942-52B64BA0CACF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Models", "NoshNovel.Models\NoshNovel.Models.csproj", "{AB32E46F-93C1-4A14-8EA6-E51932DB26F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Plugins", "NoshNovel.Plugins\NoshNovel.Plugins.csproj", "{1FA53209-75D7-4575-B264-2570F9988247}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28645DA2-94DE-438D-A942-52B64BA0CACF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28645DA2-94DE-438D-A942-52B64BA0CACF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28645DA2-94DE-438D-A942-52B64BA0CACF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28645DA2-94DE-438D-A942-52B64BA0CACF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB32E46F-93C1-4A14-8EA6-E51932DB26F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB32E46F-93C1-4A14-8EA6-E51932DB26F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB32E46F-93C1-4A14-8EA6-E51932DB26F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB32E46F-93C1-4A14-8EA6-E51932DB26F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FA53209-75D7-4575-B264-2570F9988247}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FA53209-75D7-4575-B264-2570F9988247}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FA53209-75D7-4575-B264-2570F9988247}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FA53209-75D7-4575-B264-2570F9988247}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F2030769-0C25-48F1-AA46-32F2C335E7F2}
+	EndGlobalSection
+EndGlobal

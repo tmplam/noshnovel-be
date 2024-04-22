@@ -1,0 +1,6 @@
+@NoshNovel.API_HostAddress = http://localhost:5202
+
+GET {{NoshNovel.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
