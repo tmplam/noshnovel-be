@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NoshNovel.Models\NoshNovel.Models.csproj" />
+  </ItemGroup>
+
 </Project>
