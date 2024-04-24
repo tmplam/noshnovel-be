@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NoshNovel.Models;
+using NoshNovel.Servers.TruyenFull;
 
 namespace NoshNovel.API.Controllers
 {
@@ -13,22 +15,33 @@ namespace NoshNovel.API.Controllers
 
         [HttpGet]
         [Route("search")]
-        public IActionResult Search([FromQuery] string keyword)
+        public IActionResult SearchByKeyword([FromQuery] string server, [FromQuery] string keyword,
+            [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
+            TruyenFullCrawler crawler = new TruyenFullCrawler();
+            NovelSearchResult response = crawler.GetByKeyword(keyword, page, perPage);
+            return Ok(response);
+        }
 
-            return Ok();
+        [HttpGet]
+        [Route("genre-filter")]
+        public IActionResult SearchByGenre([FromQuery] string server, [FromQuery] string genre,
+            [FromQuery] int page = 1, [FromQuery] int perPage = 18)
+        {
+            TruyenFullCrawler crawler = new TruyenFullCrawler();
+            NovelSearchResult response = crawler.FilterByGenre(genre, page, perPage);
+            return Ok(response);
         }
 
         [HttpGet]
         [Route("genres")]
         public IActionResult GetGenres([FromQuery] string server)
         {
-
             return Ok();
         }
 
         [HttpGet]
-        [Route("server")]
+        [Route("servers")]
         public IActionResult GetServers()
         {
             return Ok();

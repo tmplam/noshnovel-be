@@ -10,4 +10,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NoshNovel.Models\NoshNovel.Models.csproj" />
+    <ProjectReference Include="..\NoshNovel.Plugins\NoshNovel.Plugins.csproj" />
+    <ProjectReference Include="..\NoshNovel.Servers.TruyenFull\NoshNovel.Servers.TruyenFull.csproj" />
+  </ItemGroup>
+
 </Project>
