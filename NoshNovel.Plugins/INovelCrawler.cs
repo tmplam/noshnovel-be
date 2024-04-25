@@ -7,6 +7,6 @@ namespace NoshNovel.Plugins
         NovelSearchResult GetByKeyword(string keyword, int page = 1, int perPage = 18);
         NovelSearchResult FilterByGenre(string genre, int page = 1, int perPage = 18);
         IEnumerable<Genre> GetGenres();
-        NovelDetail GetNovelDetail(string novelUrl);
+        NovelDetail GetNovelDetail(string novelSlug);
     }
 }

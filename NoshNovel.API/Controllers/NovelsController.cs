@@ -37,7 +37,8 @@ namespace NoshNovel.API.Controllers
         [Route("genres")]
         public IActionResult GetGenres([FromQuery] string server)
         {
-            return Ok();
+            TruyenFullCrawler crawler = new TruyenFullCrawler();
+            return Ok(crawler.GetGenres());
         }
 
         [HttpGet]
@@ -49,7 +50,7 @@ namespace NoshNovel.API.Controllers
 
         [HttpGet]
         [Route("detail")]
-        public IActionResult GetDetail([FromQuery] string server, [FromQuery] string url)
+        public IActionResult GetDetail([FromQuery] string server, [FromQuery] string novel)
         {
             return Ok();
         }

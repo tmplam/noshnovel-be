@@ -10,6 +10,7 @@ namespace NoshNovel.Servers.TruyenFull
     public class TruyenFullCrawler : INovelCrawler
     {
         private static readonly int maxPerCrawlPage = 27;
+        private static readonly string baseUrl = "https://truyenfull.vn";
 
         public NovelSearchResult GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
@@ -22,7 +23,7 @@ namespace NoshNovel.Servers.TruyenFull
 
             // Calculate total crawled pages
             HtmlWeb web = new HtmlWeb();
-            string url = $"https://truyenfull.vn/tim-kiem/?tukhoa={keyword}";
+            string url = $"{baseUrl}/tim-kiem/?tukhoa={keyword}";
             HtmlDocument doc = web.Load(url);
 
             HtmlNode paginationNode = doc.DocumentNode.SelectSingleNode(".//ul[contains(@class, 'pagination')]");
@@ -50,7 +51,7 @@ namespace NoshNovel.Servers.TruyenFull
 
             for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
             {
-                url = $"https://truyenfull.vn/tim-kiem/?tukhoa={keyword}&page={i}";
+                url = $"{baseUrl}/tim-kiem/?tukhoa={keyword}&page={i}";
                 doc = web.Load(url);
 
                 HtmlNodeCollection novelNodes = doc.DocumentNode.SelectNodes("//div[@class='row' and @itemscope and @itemtype='https://schema.org/Book']");
@@ -64,8 +65,12 @@ namespace NoshNovel.Servers.TruyenFull
                         HtmlNode novelNode = novelNodes[j];
 
                         novelItem.CoverImage = novelNode.SelectSingleNode(".//div[@class='lazyimg']").GetAttributeValue("data-image", "");
-                        novelItem.Author = novelNode.SelectSingleNode(".//span[@class='author']").InnerText;
-                        novelItem.Url = novelNode.SelectSingleNode(".//a[@itemprop='url']").GetAttributeValue("href", "");
+                        novelItem.Author = new Author()
+                        {
+                            Name = novelNode.SelectSingleNode(".//span[@class='author']").InnerText.Trim()
+                        };
+                        novelItem.NovelSlug = novelNode.SelectSingleNode(".//a[@itemprop='url']")
+                            .GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[2];
                         novelItem.Title = novelNode.SelectSingleNode(".//a[@itemprop='url']").GetAttributeValue("title", "");
 
                         try
@@ -99,7 +104,7 @@ namespace NoshNovel.Servers.TruyenFull
             }
 
             // Calculate total novels
-            url = $"https://truyenfull.vn/tim-kiem/?tukhoa={keyword}&page={totalCrawlPages}";
+            url = $"{baseUrl}/tim-kiem/?tukhoa={keyword}&page={totalCrawlPages}";
             doc = web.Load(url);
             int totalNovels = 0;
 
@@ -142,7 +147,7 @@ namespace NoshNovel.Servers.TruyenFull
 
             // Calculate total crawled pages
             HtmlWeb web = new HtmlWeb();
-            string url = $"https://truyenfull.vn/the-loai/{genre}/";
+            string url = $"{baseUrl}/the-loai/{genre}/";
             HtmlDocument doc = web.Load(url);
 
             HtmlNode paginationNode = doc.DocumentNode.SelectSingleNode(".//ul[contains(@class, 'pagination')]");
@@ -171,7 +176,7 @@ namespace NoshNovel.Servers.TruyenFull
 
             for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
             {
-                url = $"https://truyenfull.vn/the-loai/{genre}/trang-{i}";
+                url = $"{baseUrl}/the-loai/{genre}/trang-{i}";
                 doc = web.Load(url);
 
                 HtmlNodeCollection novelNodes = doc.DocumentNode.SelectNodes("//div[@class='row' and @itemscope and @itemtype='https://schema.org/Book']");
@@ -189,8 +194,12 @@ namespace NoshNovel.Servers.TruyenFull
                             continue;
                         }
                         novelItem.CoverImage = novelNode.SelectSingleNode(".//div[@class='lazyimg']").GetAttributeValue("data-image", "");
-                        novelItem.Author = novelNode.SelectSingleNode(".//span[@class='author']").InnerText;
-                        novelItem.Url = novelNode.SelectSingleNode(".//a[@itemprop='url']").GetAttributeValue("href", "");
+                        novelItem.Author = new Author()
+                        {
+                            Name = novelNode.SelectSingleNode(".//span[@class='author']").InnerText.Trim()
+                        };
+                        novelItem.NovelSlug = novelNode.SelectSingleNode(".//a[@itemprop='url']")
+                            .GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[2];
                         novelItem.Title = novelNode.SelectSingleNode(".//a[@itemprop='url']").GetAttributeValue("title", "");
 
                         try
@@ -253,7 +262,35 @@ namespace NoshNovel.Servers.TruyenFull
 
         public IEnumerable<Genre> GetGenres()
         {
-            return null;
+            var url = baseUrl;
+
+            HtmlWeb web = new HtmlWeb();
+            HtmlDocument doc = web.Load(url);
+
+            HtmlNode navNode = doc.DocumentNode.SelectSingleNode("//ul[contains(@class, 'control') and contains(@class, 'nav') and contains(@class, 'navbar-nav')]");
+
+            List<Genre> genres = new List<Genre>();
+            if (navNode != null)
+            {
+                // Select the genre node of nav and go to its content
+                HtmlNodeCollection genreWrappers = navNode.SelectNodes("./li")[1].SelectSingleNode("div").SelectSingleNode("div").SelectNodes("div");
+
+                foreach (var genreWrapper in genreWrappers)
+                {
+                    HtmlNodeCollection genreList = genreWrapper.SelectSingleNode("ul").SelectNodes("li");
+                    foreach (var genreItem in genreList)
+                    {
+                        HtmlNode genreLinkNode = genreItem.SelectSingleNode("a");
+                        Genre genre = new Genre()
+                        {
+                            Name = genreLinkNode.InnerText.Trim(),
+                            Slug = genreLinkNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3]
+                        };
+                        genres.Add(genre);
+                    }
+                }
+            }
+            return genres;
         }
 
         public NovelDetail GetNovelDetail(string novelUrl)
