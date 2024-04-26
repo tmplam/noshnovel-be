@@ -10,5 +10,6 @@ namespace NoshNovel.Plugins
         IEnumerable<Genre> GetGenres();
         NovelDetail GetNovelDetail(string novelSlug);
         NovelChaptersResult GetChapterList(string novelSlug, int page = 1, int perPage = 40);
+        NovelContent GetNovelContent(string novelSlug, string chapterSlug);
     }
 }

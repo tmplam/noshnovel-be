@@ -8,9 +8,11 @@ namespace NoshNovel.API.Controllers
     [ApiController]
     public class NovelsController : ControllerBase
     {
-        public NovelsController()
+        private readonly ILogger<NovelsController> logger;
+
+        public NovelsController(ILogger<NovelsController> logger)
         {
-            
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -45,7 +47,8 @@ namespace NoshNovel.API.Controllers
         [Route("servers")]
         public IActionResult GetServers()
         {
-            return Ok();
+            TruyenFullCrawler crawler = new TruyenFullCrawler();
+            return Ok(crawler.GetGenres());
         }
 
         [HttpGet]
@@ -62,6 +65,14 @@ namespace NoshNovel.API.Controllers
         {
             TruyenFullCrawler crawler = new TruyenFullCrawler();
             return Ok(crawler.GetChapterList(novelSlug, page, perPage));
+        }
+
+        [HttpGet]
+        [Route("content")]
+        public IActionResult GetContent([FromQuery] string server, [FromQuery] string novelSlug, string chapterSlug)
+        {
+            TruyenFullCrawler crawler = new TruyenFullCrawler();
+            return Ok(crawler.GetNovelContent(novelSlug, chapterSlug));
         }
     }
 }

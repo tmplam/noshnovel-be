@@ -7,14 +7,8 @@ using NoshNovel.Plugins.Utilities;
 namespace NoshNovel.Servers.TruyenFull
 {
     [NovelServer("truyenfull.vn")]
-    public class TruyenFullCrawler : INovelCrawler
+    public partial class TruyenFullCrawler : INovelCrawler
     {
-        private static readonly string baseUrl = "https://truyenfull.vn";
-        // Number of maximum novels per search page of crawled page
-        private static readonly int maxPerCrawlPage = 27;
-        // Number of maximum chapters per detail page of crawled detail page
-        private static readonly int maxPerCrawledChaptersPage = 50;
-
         public NovelSearchResult GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
@@ -78,7 +72,8 @@ namespace NoshNovel.Servers.TruyenFull
 
                         try
                         {
-                            string[] chapterStringTokens = novelNode.SelectSingleNode(".//span[@class='chapter-text']").ParentNode.InnerText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                            string[] chapterStringTokens = novelNode.SelectSingleNode(".//span[@class='chapter-text']").ParentNode.InnerText
+                                .Split(" ", StringSplitOptions.RemoveEmptyEntries);
 
                             string chapterNumString = chapterStringTokens[chapterStringTokens.Length - 1];
                             if (chapterNumString.Contains("-"))
@@ -90,7 +85,7 @@ namespace NoshNovel.Servers.TruyenFull
                         }
                         catch (Exception)
                         {
-                            novelItem.TotalChapter = -1;
+                            novelItem.TotalChapter = 0;
                         }
 
                         novelItem.Status = novelNode.SelectSingleNode(".//span[contains(@class, 'label-full')]") != null ? "Đã hoàn thành" : "Đang ra";
@@ -219,7 +214,7 @@ namespace NoshNovel.Servers.TruyenFull
                         }
                         catch (Exception)
                         {
-                            novelItem.TotalChapter = -1;
+                            novelItem.TotalChapter = 0;
                         }
 
                         novelItem.Status = novelNode.SelectSingleNode(".//span[contains(@class, 'label-full')]") != null ? "Đã hoàn thành" : "Đang ra";
@@ -327,7 +322,7 @@ namespace NoshNovel.Servers.TruyenFull
                 genreList.Add(genre);
             }
             novel.Genres = genreList;
-            novel.Status = infoNode.SelectNodes("div")[2].SelectSingleNode("span").InnerText.Trim();
+            novel.Status = infoNode.SelectNodes("div")[3].SelectSingleNode("span").InnerText.Trim();
             novel.Rating = double.Parse(doc.DocumentNode.SelectSingleNode("//span[@itemprop='ratingValue']").InnerText) / 2;
             novel.Description = doc.DocumentNode.SelectSingleNode("//div[@itemprop='description']").InnerHtml;
 
@@ -336,6 +331,10 @@ namespace NoshNovel.Servers.TruyenFull
 
         public NovelChaptersResult GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
+            NovelChaptersResult response = new NovelChaptersResult();
+            response.Page = page;
+            response.PerPage = perPage;
+
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
             int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + 1;
@@ -366,7 +365,8 @@ namespace NoshNovel.Servers.TruyenFull
                         string[] chapterTokens = chapterNode.InnerText.Split(":", 2, StringSplitOptions.RemoveEmptyEntries);
 
                         Chapter chapter = new Chapter();
-                        chapter.ChapterNumber = int.Parse(chapterTokens[0].Split(" ", StringSplitOptions.RemoveEmptyEntries)[1]);
+                        chapter.Label = chapterTokens[0].Trim();
+                        chapter.Slug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3];
 
                         if (chapterTokens.Length > 1)
                         {
@@ -383,7 +383,7 @@ namespace NoshNovel.Servers.TruyenFull
                 }
             }
 
-            // Calculate total chapters
+            // Calculate total items
             doc = web.Load($"{novelUrl}/trang-{totalCrawlPages}");
             int totalChapters = 0;
 
@@ -392,16 +392,47 @@ namespace NoshNovel.Servers.TruyenFull
             {
                 int novelOflastCrawedPage = last.SelectMany(chapterWrapper => chapterWrapper.Descendants("a")).Count();
                 totalChapters = (totalCrawlPages - 1) * maxPerCrawledChaptersPage + novelOflastCrawedPage;
-            }
+            };
 
-            NovelChaptersResult response = new NovelChaptersResult();
-            response.Page = page;
-            response.PerPage = perPage;
             response.Total = totalChapters;
             response.TotalPages = totalChapters / perPage + (totalChapters % perPage == 0 ? 0 : 1);
             response.Data = chapters;
 
             return response;
+        }
+
+        public NovelContent GetNovelContent(string novelSlug, string chapterSlug)
+        {
+            var novelContent = new NovelContent();
+
+            HtmlWeb web = new HtmlWeb();
+            HtmlDocument doc = web.Load($"{baseUrl}/{novelSlug}/{chapterSlug}");
+
+            novelContent.Title = doc.DocumentNode.SelectSingleNode("//a[@class='truyen-title']").InnerText.Trim();
+
+
+            HtmlNode firstDiv = doc.DocumentNode.SelectSingleNode("//div[@itemprop='articleBody']/div");
+            if (firstDiv != null)
+            {
+                HtmlNode contentNode = firstDiv.ParentNode;
+                contentNode.RemoveChild(firstDiv);
+
+                novelContent.Content = contentNode.InnerHtml;
+            }
+
+            HtmlNode chapterNode = doc.DocumentNode.SelectSingleNode("//a[@class='chapter-title']");
+            string[] chapterTokens = chapterNode.InnerText.Split(":", 2, StringSplitOptions.RemoveEmptyEntries);
+
+            novelContent.Chapter = new Chapter();
+            novelContent.Chapter.Label = chapterTokens[0].Trim();
+            novelContent.Chapter.Slug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3];
+
+            if (chapterTokens.Length > 1)
+            {
+                novelContent.Chapter.Name = chapterTokens[1].Trim().Capitalize();
+            }
+
+            return novelContent;
         }
     }
 }
