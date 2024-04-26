@@ -3,7 +3,7 @@ using System.Text;
 
 namespace NoshNovel.Plugins.Utilities
 {
-    public class HelperClass
+    public static class HelperClass
     {
         public static string GenerateSlug(string str)
         {
@@ -17,6 +17,14 @@ namespace NoshNovel.Plugins.Utilities
             string result = replacedSpaces.ToLower().Replace("đ", "d");
 
             return result;
+        }
+
+        public static string Capitalize(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            return char.ToUpper(input[0]) + input.Substring(1);
         }
     }
 }

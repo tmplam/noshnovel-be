@@ -50,9 +50,18 @@ namespace NoshNovel.API.Controllers
 
         [HttpGet]
         [Route("detail")]
-        public IActionResult GetDetail([FromQuery] string server, [FromQuery] string novel)
+        public IActionResult GetDetail([FromQuery] string server, [FromQuery] string novelSlug)
         {
-            return Ok();
+            TruyenFullCrawler crawler = new TruyenFullCrawler();
+            return Ok(crawler.GetNovelDetail(novelSlug));
+        }
+
+        [HttpGet]
+        [Route("chapters")]
+        public IActionResult GetChapters([FromQuery] string server, [FromQuery] string novelSlug, int page = 1, int perPage = 40)
+        {
+            TruyenFullCrawler crawler = new TruyenFullCrawler();
+            return Ok(crawler.GetChapterList(novelSlug, page, perPage));
         }
     }
 }
