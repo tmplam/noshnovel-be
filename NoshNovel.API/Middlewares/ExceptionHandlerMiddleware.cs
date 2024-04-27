@@ -33,9 +33,9 @@ namespace NoshNovel.API.Middlewares
 
                 var error = new
                 {
-                    Id = errorId,
+                    ErrorId = errorId,
                     RequestUrl = httpContext.Request.Path,
-                    ErrorMessage = "Something went wrong! We are looking into resolving this!",
+                    ErrorMessage = ex.Message,
                 };
 
                 await httpContext.Response.WriteAsJsonAsync(error);

@@ -1,3 +1,4 @@
+using NoshNovel.Factories.NovelCrawlers;
 using NoshNovel.API.Middlewares;
 using Serilog;
 
@@ -20,6 +21,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add plugin service
+builder.Services.AddTransient<INovelCrawlerFactory, PluginNovelCrawlerFactory>();
 
 var app = builder.Build();
 

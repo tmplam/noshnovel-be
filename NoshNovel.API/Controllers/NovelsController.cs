@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NoshNovel.Factories.NovelCrawlers;
 using NoshNovel.Models;
-using NoshNovel.Servers.TruyenFull;
+using NoshNovel.Plugins;
 
 namespace NoshNovel.API.Controllers
 {
@@ -9,10 +10,12 @@ namespace NoshNovel.API.Controllers
     public class NovelsController : ControllerBase
     {
         private readonly ILogger<NovelsController> logger;
+        private readonly INovelCrawlerFactory novelCrawlerFactory;
 
-        public NovelsController(ILogger<NovelsController> logger)
+        public NovelsController(ILogger<NovelsController> logger, INovelCrawlerFactory novelCrawlerFactory)
         {
             this.logger = logger;
+            this.novelCrawlerFactory = novelCrawlerFactory;
         }
 
         [HttpGet]
@@ -20,8 +23,8 @@ namespace NoshNovel.API.Controllers
         public IActionResult SearchByKeyword([FromQuery] string server, [FromQuery] string keyword,
             [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
-            TruyenFullCrawler crawler = new TruyenFullCrawler();
-            NovelSearchResult response = crawler.GetByKeyword(keyword, page, perPage);
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelSearchResult response = novelCrawler.GetByKeyword(keyword, page, perPage);
             return Ok(response);
         }
 
@@ -30,8 +33,8 @@ namespace NoshNovel.API.Controllers
         public IActionResult SearchByGenre([FromQuery] string server, [FromQuery] string genre,
             [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
-            TruyenFullCrawler crawler = new TruyenFullCrawler();
-            NovelSearchResult response = crawler.FilterByGenre(genre, page, perPage);
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelSearchResult response = novelCrawler.FilterByGenre(genre, page, perPage);
             return Ok(response);
         }
 
@@ -39,40 +42,44 @@ namespace NoshNovel.API.Controllers
         [Route("genres")]
         public IActionResult GetGenres([FromQuery] string server)
         {
-            TruyenFullCrawler crawler = new TruyenFullCrawler();
-            return Ok(crawler.GetGenres());
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            IEnumerable<Genre> response = novelCrawler.GetGenres();
+            return Ok(response);
         }
 
         [HttpGet]
         [Route("servers")]
         public IActionResult GetServers()
         {
-            TruyenFullCrawler crawler = new TruyenFullCrawler();
-            return Ok(crawler.GetGenres());
+            IEnumerable<string> servers = novelCrawlerFactory.GetNovelCrawlerServers();
+            return Ok(servers);
         }
 
         [HttpGet]
         [Route("detail")]
         public IActionResult GetDetail([FromQuery] string server, [FromQuery] string novelSlug)
         {
-            TruyenFullCrawler crawler = new TruyenFullCrawler();
-            return Ok(crawler.GetNovelDetail(novelSlug));
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelDetail novelDetail = novelCrawler.GetNovelDetail(novelSlug);
+            return Ok(novelDetail);
         }
 
         [HttpGet]
         [Route("chapters")]
         public IActionResult GetChapters([FromQuery] string server, [FromQuery] string novelSlug, int page = 1, int perPage = 40)
         {
-            TruyenFullCrawler crawler = new TruyenFullCrawler();
-            return Ok(crawler.GetChapterList(novelSlug, page, perPage));
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelChaptersResult novelChaptersResult = novelCrawler.GetChapterList(novelSlug, page, perPage);
+            return Ok(novelChaptersResult);
         }
 
         [HttpGet]
         [Route("content")]
         public IActionResult GetContent([FromQuery] string server, [FromQuery] string novelSlug, string chapterSlug)
         {
-            TruyenFullCrawler crawler = new TruyenFullCrawler();
-            return Ok(crawler.GetNovelContent(novelSlug, chapterSlug));
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelContent novelContent = novelCrawler.GetNovelContent(novelSlug, chapterSlug);
+            return Ok(novelContent);
         }
     }
 }

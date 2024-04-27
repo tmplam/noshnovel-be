@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.60" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\NoshNovel.Models\NoshNovel.Models.csproj" />
   </ItemGroup>
 

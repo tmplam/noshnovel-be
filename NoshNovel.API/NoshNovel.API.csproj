@@ -17,10 +17,11 @@
   <ItemGroup>
     <ProjectReference Include="..\NoshNovel.Models\NoshNovel.Models.csproj" />
     <ProjectReference Include="..\NoshNovel.Plugins\NoshNovel.Plugins.csproj" />
-    <ProjectReference Include="..\NoshNovel.Servers.TruyenFull\NoshNovel.Servers.TruyenFull.csproj" />
+    <ProjectReference Include="..\NoshNovel.Factories\NoshNovel.Factories.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Logs\" />
+    <Folder Include="PluginFiles\NovelCrawlers\" />
   </ItemGroup>
 </Project>
