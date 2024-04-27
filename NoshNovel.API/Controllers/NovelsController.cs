@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NoshNovel.Factories.NovelCrawlers;
+using NoshNovel.Models;
+using NoshNovel.Plugins;
 
 namespace NoshNovel.API.Controllers
 {
@@ -6,39 +9,77 @@ namespace NoshNovel.API.Controllers
     [ApiController]
     public class NovelsController : ControllerBase
     {
-        public NovelsController()
+        private readonly ILogger<NovelsController> logger;
+        private readonly INovelCrawlerFactory novelCrawlerFactory;
+
+        public NovelsController(ILogger<NovelsController> logger, INovelCrawlerFactory novelCrawlerFactory)
         {
-            
+            this.logger = logger;
+            this.novelCrawlerFactory = novelCrawlerFactory;
         }
 
         [HttpGet]
         [Route("search")]
-        public IActionResult Search([FromQuery] string keyword)
+        public IActionResult SearchByKeyword([FromQuery] string server, [FromQuery] string keyword,
+            [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelSearchResult response = novelCrawler.GetByKeyword(keyword, page, perPage);
+            return Ok(response);
+        }
 
-            return Ok();
+        [HttpGet]
+        [Route("genre-filter")]
+        public IActionResult SearchByGenre([FromQuery] string server, [FromQuery] string genre,
+            [FromQuery] int page = 1, [FromQuery] int perPage = 18)
+        {
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelSearchResult response = novelCrawler.FilterByGenre(genre, page, perPage);
+            return Ok(response);
         }
 
         [HttpGet]
         [Route("genres")]
         public IActionResult GetGenres([FromQuery] string server)
         {
-
-            return Ok();
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            IEnumerable<Genre> response = novelCrawler.GetGenres();
+            return Ok(response);
         }
 
         [HttpGet]
-        [Route("server")]
+        [Route("servers")]
         public IActionResult GetServers()
         {
-            return Ok();
+            IEnumerable<string> servers = novelCrawlerFactory.GetNovelCrawlerServers();
+            return Ok(servers);
         }
 
         [HttpGet]
         [Route("detail")]
-        public IActionResult GetDetail([FromQuery] string server, [FromQuery] string url)
+        public IActionResult GetDetail([FromQuery] string server, [FromQuery] string novelSlug)
         {
-            return Ok();
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelDetail novelDetail = novelCrawler.GetNovelDetail(novelSlug);
+            return Ok(novelDetail);
+        }
+
+        [HttpGet]
+        [Route("chapters")]
+        public IActionResult GetChapters([FromQuery] string server, [FromQuery] string novelSlug, int page = 1, int perPage = 40)
+        {
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelChaptersResult novelChaptersResult = novelCrawler.GetChapterList(novelSlug, page, perPage);
+            return Ok(novelChaptersResult);
+        }
+
+        [HttpGet]
+        [Route("content")]
+        public IActionResult GetContent([FromQuery] string server, [FromQuery] string novelSlug, string chapterSlug)
+        {
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
+            NovelContent novelContent = novelCrawler.GetNovelContent(novelSlug, chapterSlug);
+            return Ok(novelContent);
         }
     }
 }
