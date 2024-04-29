@@ -40,6 +40,8 @@ namespace NoshNovel.Servers.TangThuVien
                     if (response.IsSuccessStatusCode)
                     {
                         string responseContent = response.Content.ReadAsStringAsync().Result;
+                        // decodes html-encoded
+                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
                         HtmlDocument doc = new HtmlDocument();
                         doc.LoadHtml(responseContent);
                         HtmlNodeCollection genreNodes = doc.DocumentNode.SelectNodes("//div[@id='classify-list']/dl/dd");
