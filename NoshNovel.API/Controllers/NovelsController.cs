@@ -81,5 +81,24 @@ namespace NoshNovel.API.Controllers
             NovelContent novelContent = novelCrawler.GetNovelContent(novelSlug, chapterSlug);
             return Ok(novelContent);
         }
+
+        // GET: api/download/{fileName}
+        [HttpGet]
+        [Route("download")]
+        public IActionResult DownloadNovel([FromQuery] string server)
+        {
+            // Kiểm tra xem tập tin có tồn tại không
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TextFile.txt");
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound();
+            }
+
+            // Đọc nội dung của tập tin
+            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+            // Trả về nội dung tập tin dưới dạng một phản hồi file
+            return File(fileStream, "application/octet-stream", "filename.txt");
+        }
     }
 }

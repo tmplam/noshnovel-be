@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoshNovel.Plugins", "NoshNo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoshNovel.Servers.TruyenFull", "NoshNovel.Servers.TruyenFull\NoshNovel.Servers.TruyenFull.csproj", "{B0FE803F-B59D-4EC9-8DA4-B90F9CC10034}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Factories", "NoshNovel.Factories\NoshNovel.Factories.csproj", "{963540B2-CBCA-489A-993F-B02938071D6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoshNovel.Factories", "NoshNovel.Factories\NoshNovel.Factories.csproj", "{963540B2-CBCA-489A-993F-B02938071D6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.DownloadFormat.Epub", "NoshNovel.DownloadFormat.Epub\NoshNovel.DownloadFormat.Epub.csproj", "{7C1A1C45-5B1B-42A9-A82D-3A2268B200A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{963540B2-CBCA-489A-993F-B02938071D6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{963540B2-CBCA-489A-993F-B02938071D6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{963540B2-CBCA-489A-993F-B02938071D6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C1A1C45-5B1B-42A9-A82D-3A2268B200A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C1A1C45-5B1B-42A9-A82D-3A2268B200A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C1A1C45-5B1B-42A9-A82D-3A2268B200A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C1A1C45-5B1B-42A9-A82D-3A2268B200A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
