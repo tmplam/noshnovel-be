@@ -374,7 +374,95 @@ namespace NoshNovel.Servers.TangThuVien
 
         public NovelDetail GetNovelDetail(string novelSlug)
         {
-            throw new NotImplementedException();
+            var url = $"{baseUrl}/doc-truyen/{novelSlug}";
+
+            NovelDetail novel = new NovelDetail();
+
+            using (HttpClient httpClient = new HttpClient())
+            {
+                try
+                {
+                    // make request
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                    HttpResponseMessage response = httpClient.Send(request);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        // Decodes html-encoded
+                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        HtmlDocument doc = new HtmlDocument();
+                        doc.LoadHtml(responseContent);
+
+                        HtmlNode novelTitleNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-info ']/h1");
+
+                        if (novelTitleNode != null)
+                        {
+                            novel.Title = novelTitleNode.InnerText.Trim();
+                        }
+
+                        HtmlNode novelAuthorNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-info ']/p[@class='tag']/a[@class='blue']");
+
+                        if (novelAuthorNode != null)
+                        {
+                            novel.Author = new Author()
+                            {
+                                Name = novelAuthorNode.InnerText.Trim(),
+                            };
+                        }
+
+                        HtmlNode novelDescriptionNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-intro']/p");
+
+                        if (novelDescriptionNode != null)
+                        {
+                            novel.Description = novelDescriptionNode.InnerText.Trim();
+                        }
+
+                        HtmlNode novelRatingNode = doc.DocumentNode.SelectSingleNode("//cite[@id='myrate']");
+
+                        if (novelRatingNode != null)
+                        {
+                            novel.Rating = double.Parse(novelRatingNode.InnerText.Trim());
+                        }
+
+
+                        HtmlNode novelStatusNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-info ']/p[@class='tag']/span");
+
+                        if (novelStatusNode != null)
+                        {
+                            novel.Status = novelStatusNode.InnerText.Trim();
+                        }
+
+                        HtmlNode novelCoverImageNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-img']/a/img");
+
+                        if (novelCoverImageNode != null)
+                        {
+                            novel.CoverImage = novelCoverImageNode.GetAttributeValue("src", "").Trim();
+                        }
+
+                        HtmlNode novelGenresNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-info ']/p[@class='tag']/a[@class='red']");
+
+                        if (novelGenresNode != null)
+                        {
+                            List<Genre> genreList = new List<Genre>();
+                            Genre genre = new Genre()
+                            {
+                                Name = novelGenresNode.InnerText.Trim(),
+                                Slug = novelGenresNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3]
+                            };
+                            genreList.Add(genre);
+
+                            novel.Genres = genreList;
+                        }
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                }
+            }
+
+            return novel;
         }
     }
 }
