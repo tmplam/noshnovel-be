@@ -1,4 +1,5 @@
 using NoshNovel.Factories.NovelCrawlers;
+using NoshNovel.Factories.NovelDownloaders;
 using NoshNovel.API.Middlewares;
 using Serilog;
 
@@ -24,6 +25,7 @@ builder.Services.AddSwaggerGen();
 
 // Add plugin service
 builder.Services.AddTransient<INovelCrawlerFactory, PluginNovelCrawlerFactory>();
+builder.Services.AddTransient<INovelDownloaderFactory, PluginNovelDownloaderFactory>();
 
 var app = builder.Build();
 

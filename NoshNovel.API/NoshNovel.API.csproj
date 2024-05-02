@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="Logs\" />
+    <Folder Include="PluginFiles\NovelDownloaders\" />
     <Folder Include="PluginFiles\NovelCrawlers\" />
   </ItemGroup>
 </Project>
