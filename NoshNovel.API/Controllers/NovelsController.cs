@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NoshNovel.Factories.NovelCrawlers;
+using NoshNovel.Factories.NovelDownloaders;
 using NoshNovel.Models;
 using NoshNovel.Plugins;
+using NoshNovel.Plugins.Utilities;
 
 namespace NoshNovel.API.Controllers
 {
@@ -11,11 +13,14 @@ namespace NoshNovel.API.Controllers
     {
         private readonly ILogger<NovelsController> logger;
         private readonly INovelCrawlerFactory novelCrawlerFactory;
+        private readonly INovelDownloaderFactory novelDownloaderFactory;
 
-        public NovelsController(ILogger<NovelsController> logger, INovelCrawlerFactory novelCrawlerFactory)
+        public NovelsController(ILogger<NovelsController> logger, INovelCrawlerFactory novelCrawlerFactory, 
+            INovelDownloaderFactory novelDownloaderFactory)
         {
             this.logger = logger;
             this.novelCrawlerFactory = novelCrawlerFactory;
+            this.novelDownloaderFactory = novelDownloaderFactory;
         }
 
         [HttpGet]
@@ -82,23 +87,41 @@ namespace NoshNovel.API.Controllers
             return Ok(novelContent);
         }
 
-        // GET: api/download/{fileName}
         [HttpGet]
-        [Route("download")]
-        public IActionResult DownloadNovel([FromQuery] string server)
+        [Route("file-extensions")]
+        public IActionResult GetDownloadFileExtensions()
         {
-            // Kiểm tra xem tập tin có tồn tại không
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TextFile.txt");
-            if (!System.IO.File.Exists(filePath))
+            IEnumerable<string> fileExtensions = novelDownloaderFactory.GetFileExtensions();
+            return Ok(fileExtensions);
+        }
+
+        // GET: api/download/{fileName}
+        [HttpPost]
+        [Route("download")]
+        public async Task<IActionResult> DownloadNovel([FromBody] NovelDownloadRequest novelDownloadRequest)
+        {
+            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(novelDownloadRequest.Server);
+            INovelDownloader novelDownloader = novelDownloaderFactory.CreateNovelDownloader(novelDownloadRequest.FileExtension);
+
+            NovelDownloadObject novelDownloadObject = new NovelDownloadObject()
             {
-                return NotFound();
+                NovelDetail = novelCrawler.GetNovelDetail(novelDownloadRequest.NovelSlug),
+            };
+
+            List<NovelContent> downloadChapters = new List<NovelContent>();
+            foreach (var chapterSlug in novelDownloadRequest.ChapterSlugs)
+            {
+                NovelContent novelContent = novelCrawler.GetNovelContent(novelDownloadRequest.NovelSlug, chapterSlug);
+                downloadChapters.Add(novelContent);
             }
+            novelDownloadObject.DownloadChapters = downloadChapters;
+            novelDownloadObject.NovelStyling = novelDownloadRequest.NovelStyling;
 
-            // Đọc nội dung của tập tin
-            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            Stream novelFileStream = await novelDownloader.GetFileStream(novelDownloadObject);
+            
+            string fileName = $"{HelperClass.GenerateSlug(novelDownloadObject.NovelDetail.Title)}.{novelDownloadRequest.FileExtension.ToLower()}";
 
-            // Trả về nội dung tập tin dưới dạng một phản hồi file
-            return File(fileStream, "application/octet-stream", "filename.txt");
+            return File(novelFileStream, "application/octet-stream", fileName);
         }
     }
 }

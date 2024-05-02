@@ -42,7 +42,7 @@ namespace NoshNovel.Factories.NovelDownloaders
                     foreach (var pluginType in pluginTypes)
                     {
                         DownloadFormatAttribute? downloadFormatAttribute = (DownloadFormatAttribute?)Attribute.GetCustomAttribute(pluginType,
-                            typeof(NovelServerAttribute));
+                            typeof(DownloadFormatAttribute));
 
                         if (downloadFormatAttribute != null)
                         {

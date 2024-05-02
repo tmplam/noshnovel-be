@@ -4,6 +4,6 @@ namespace NoshNovel.Plugins
 {
     public interface INovelDownloader
     {
-        Stream GetFileStream(NovelDownloadObject novelDownloadObject);
+        Task<Stream> GetFileStream(NovelDownloadObject novelDownloadObject);
     }
 }
