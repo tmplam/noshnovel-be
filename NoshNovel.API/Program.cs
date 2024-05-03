@@ -2,6 +2,8 @@ using NoshNovel.Factories.NovelCrawlers;
 using NoshNovel.Factories.NovelDownloaders;
 using NoshNovel.API.Middlewares;
 using Serilog;
+using QuestPDF.Infrastructure;
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
