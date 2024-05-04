@@ -2,6 +2,9 @@
 using NoshNovel.Models;
 using NoshNovel.Plugins;
 using NoshNovel.Plugins.Attributes;
+using System.Text.RegularExpressions;
+using NoshNovel.Plugins.Utilities;
+using Newtonsoft.Json.Linq;
 
 namespace NoshNovel.Servers.TruyenChu
 {
@@ -56,7 +59,7 @@ namespace NoshNovel.Servers.TruyenChu
 
                         novelItem.Title = titleNode.InnerText.Trim();
                         string[] hrefTokens = titleNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.TrimEntries);
-                        novelItem.NovelSlug = hrefTokens[hrefTokens.Length - 1];
+                        novelItem.NovelSlug = hrefTokens[hrefTokens.Length - 1].Replace(".html", "");
 
                         string[] chapterTokens = novelNode.SelectSingleNode(".//span[@class='line-clamp-1 text-sm']").InnerText.Trim().Split();
 
@@ -170,7 +173,7 @@ namespace NoshNovel.Servers.TruyenChu
 
                         novelItem.Title = titleNode.InnerText.Trim();
                         string[] hrefTokens = titleNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.TrimEntries);
-                        novelItem.NovelSlug = hrefTokens[hrefTokens.Length - 1];
+                        novelItem.NovelSlug = hrefTokens[hrefTokens.Length - 1].Replace(".html", "");
 
                         string[] chapterTokens = novelNode.SelectSingleNode(".//span[@class='line-clamp-1 text-sm']").InnerText.Trim().Split();
 
@@ -236,7 +239,79 @@ namespace NoshNovel.Servers.TruyenChu
 
         public NovelChaptersResult GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
-            throw new NotImplementedException();
+            NovelChaptersResult response = new NovelChaptersResult();
+            response.Page = page;
+            response.PerPage = perPage;
+
+            // Calculate page and position to crawl
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + 1;
+            int crawlPosition = startPosition % maxPerCrawledChaptersPage - 1;
+
+            HtmlWeb web = new HtmlWeb();
+            var novelUrl = $"{baseUrl}/truyen/{novelSlug}";
+            HtmlDocument doc = web.Load(novelUrl);
+
+            var script = doc.DocumentNode.SelectSingleNode("//script[contains(@id,'__NEXT_DATA__')]");
+            string jsonString = script.InnerText;
+            // Convert json string to object
+            JObject jsonObject = JObject.Parse(jsonString);
+            JToken? pageProps = jsonObject["props"]?["pageProps"];
+
+            int totalChapters;
+            int.TryParse(pageProps?["total"]?.ToString(), out totalChapters);
+
+            int totalCrawlPages = totalChapters / maxPerCrawledChaptersPage + (totalChapters % maxPerCrawledChaptersPage == 0 ? 0 : 1);
+
+            int chapterCountDown = perPage;
+
+            List<Chapter> chapters = new List<Chapter>();
+            for (int i = firstCrawledPage; i <= totalCrawlPages && chapterCountDown > 0; i++)
+            {
+                var url = $"{novelUrl}?page={i}";
+                doc = web.Load(url);
+
+                script = doc.DocumentNode.SelectSingleNode("//script[contains(@id,'__NEXT_DATA__')]");
+                jsonString = script.InnerText;
+                // Convert json string to object
+                jsonObject = JObject.Parse(jsonString);
+                pageProps = jsonObject["props"]?["pageProps"];
+                JToken? chapterListToken = pageProps?["chapterList"];
+
+                if (chapterListToken != null)
+                {
+                    // Convert JToken to list
+                    List<CrawlChapter>? crawlChapters = chapterListToken.ToObject<List<CrawlChapter>>();
+
+                    // Duyệt qua danh sách hoặc mảng và in thông tin
+                    if (crawlChapters != null)
+                    {
+                        for (int j = crawlPosition; j < crawlChapters.Count(); j++)
+                        {
+                            var crawlChapter = crawlChapters[j];
+                            Chapter chapter = new Chapter()
+                            {
+                                Label = $"Chương {(i - 1) * 50 + j + 1}",
+                                Name = crawlChapter.name,
+                                Slug = crawlChapter.slug,
+                            };
+                            chapters.Add(chapter);
+
+                            if (--chapterCountDown == 0)
+                            {
+                                break;
+                            }
+                        }
+                        crawlPosition = 0;
+                    }
+                }
+            }
+
+            response.Total = totalChapters;
+            response.TotalPages = totalChapters / perPage + (totalChapters % perPage == 0 ? 0 : 1);
+            response.Data = chapters;
+
+            return response;
         }
 
         public IEnumerable<Genre> GetGenres()
@@ -265,12 +340,87 @@ namespace NoshNovel.Servers.TruyenChu
 
         public NovelContent GetNovelContent(string novelSlug, string chapterSlug)
         {
-            throw new NotImplementedException();
+            var novelContent = new NovelContent();
+
+            HtmlWeb web = new HtmlWeb();
+            HtmlDocument doc = web.Load($"{baseUrl}/truyen/{novelSlug}/{chapterSlug}");
+
+
+            var headerNode = doc.DocumentNode.SelectSingleNode(".//header[@class='chapter-bg-color chapter-content-size mx-auto']");
+            novelContent.Title = headerNode.SelectSingleNode(".//h1").InnerText.Trim();
+
+            string chapterString = headerNode.SelectSingleNode(".//h2").InnerText.Trim();
+            Match match = Regex.Match(chapterString, @"\d+");
+            string chapterNumber = match.Success ? match.Value : "0"; // Lấy số đầu tiên trong chuỗi
+            string chapterName = match.Success ? chapterString.Substring(match.Index + match.Length).Trim() : chapterString;
+
+            novelContent.Chapter = new Chapter()
+            {
+                Label = $"Chương {chapterNumber}",
+                Name = chapterName,
+                Slug = chapterSlug
+            };
+
+            novelContent.Content = doc.DocumentNode.SelectSingleNode(".//div[@class='chapter-content']").InnerHtml;
+            novelContent.Content = Regex.Replace(novelContent.Content, "<script[^>]*>.*?</script>", "");
+
+            return novelContent;
         }
 
         public NovelDetail GetNovelDetail(string novelSlug)
         {
-            throw new NotImplementedException();
+            NovelDetail novel = new NovelDetail();
+
+            HtmlWeb web = new HtmlWeb();
+            HtmlDocument doc = web.Load($"{baseUrl}/truyen/{novelSlug}");
+
+            HtmlNode coverImageNode = doc.DocumentNode.SelectSingleNode(".//img[@class='w-full object-cover object-center']");
+            novel.CoverImage = coverImageNode.GetAttributeValue("src", string.Empty);
+
+            HtmlNode infoNode = doc.DocumentNode.SelectSingleNode(".//div[@class='py-5 md:px-5 md:py-0 flex flex-col grow']");
+
+            novel.Title = infoNode.SelectSingleNode(".//h1[@itemprop='name']").InnerText.Trim();
+
+            HtmlNode authorNode = infoNode.SelectSingleNode(".//a[@itemprop='author']");
+            string[] authorTokens = authorNode.GetAttributeValue("href", "").Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            novel.Author = new Author()
+            {
+                Name = authorNode.InnerText.Trim(),
+                Slug = authorTokens[authorTokens.Length - 1]
+            };
+
+            var genreNodes = infoNode.SelectNodes(".//a[@itemprop='genre']");
+
+            List<Genre> genres = new List<Genre>();
+            foreach (var genreNode in genreNodes)
+            {
+                Genre genre = new Genre()
+                {
+                    Name = genreNode.InnerText.Trim(),
+                    Slug = genreNode.GetAttributeValue("href", string.Empty).Trim('/')
+                };
+                genres.Add(genre);
+            }
+            novel.Genres = genres;
+
+            var statusNode = infoNode.SelectNodes(".//div[@class='mb-2 flex items-center']")[1].ChildNodes[1];
+            novel.Status = statusNode.InnerText.Trim();
+
+            HtmlNode ratingNode = doc.DocumentNode.SelectSingleNode(".//span[@itemprop='ratingValue']");
+            try
+            {
+                novel.Rating = double.Parse(ratingNode.InnerText.Trim());
+            }
+            catch (Exception)
+            {
+                novel.Rating = 0;
+            }
+
+            string intro = doc.DocumentNode.SelectSingleNode(".//div[@id='bookIntro']").InnerHtml;
+            novel.Description = Regex.Replace(intro, @"href=""[^""]*""", "href=\"#\"");
+
+            return novel;
         }
     }
 }
