@@ -311,7 +311,142 @@ namespace NoshNovel.Servers.TangThuVien
 
         public NovelChaptersResult GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
-            throw new NotImplementedException();
+            var url = $"{baseUrl}/doc-truyen/{novelSlug}";
+
+            NovelChaptersResult chaptersResult = new NovelChaptersResult();
+            chaptersResult.Page = page;
+            chaptersResult.PerPage = perPage;
+
+            using (HttpClient httpClient = new HttpClient())
+            {
+                try
+                {
+                    // make first request
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                    HttpResponseMessage response = httpClient.Send(request);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        // Decodes html-encoded
+                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        HtmlDocument doc = new HtmlDocument();
+                        doc.LoadHtml(responseContent);
+
+                        string novelId = doc.DocumentNode.SelectSingleNode("//input[@id='story_id_hidden']").GetAttributeValue("value", "").Trim();
+
+                        HtmlNodeCollection paginationElementNodes = doc.DocumentNode.SelectNodes("//ul[@class='pagination']/li/a");
+
+                        // Get total chapters and total pages
+                        if (paginationElementNodes != null)
+                        {
+                            int totalCrawlPages = 1;
+                            // Total crawl pages
+                            if (paginationElementNodes.Count > 1)
+                            {
+                                var lastPaginationNodeContent = paginationElementNodes[^1].SelectSingleNode("./span").InnerText.Trim();
+
+                                if (lastPaginationNodeContent == "»")
+                                {
+                                    totalCrawlPages = int.Parse(paginationElementNodes[^2].InnerText.Trim());
+                                }
+
+                                else if (lastPaginationNodeContent == "Trang cuối")
+                                {
+                                    totalCrawlPages = int.Parse(paginationElementNodes[^1].GetAttributeValue("onclick", "").Split('(', ')')[1]) + 1;
+                                }
+                            }
+
+                            url = $"{baseUrl}/doc-truyen/page/{novelId}?page={totalCrawlPages - 1}&limit={maxPerCrawledChaptersPage}&web=1";
+
+                            request = new HttpRequestMessage(HttpMethod.Get, url);
+                            response = httpClient.Send(request);
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                responseContent = response.Content.ReadAsStringAsync().Result;
+                                // Decodes html-encoded
+                                responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                                doc = new HtmlDocument();
+                                doc.LoadHtml(responseContent);
+
+                                int totalChapters = 0;
+
+                                HtmlNodeCollection lastCrawedPageChapterNodes = doc.DocumentNode.SelectNodes("//ul[@class='cf']/li[not(contains(@class, 'divider-chap'))]");
+
+                                if (lastCrawedPageChapterNodes != null)
+                                {
+                                    int novelOflastCrawedPage = doc.DocumentNode.SelectNodes("//ul[@class='cf']/li[not(contains(@class, 'divider-chap'))]").Count;
+                                    totalChapters = (totalCrawlPages - 1) * maxPerCrawledChaptersPage + novelOflastCrawedPage;
+                                }
+
+                                chaptersResult.Total = totalChapters;
+                                chaptersResult.TotalPages = totalChapters / perPage + (totalChapters % perPage == 0 ? 0 : 1);
+                            }
+                        }
+
+
+                        url = $"{baseUrl}/doc-truyen/page/{novelId}?page={page - 1}&limit={perPage}&web=1";
+
+                        request = new HttpRequestMessage(HttpMethod.Get, url);
+                        response = httpClient.Send(request);
+                        // get chapters
+                        if (response.IsSuccessStatusCode)
+                        {
+                            responseContent = response.Content.ReadAsStringAsync().Result;
+                            // Decodes html-encoded
+                            responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                            doc = new HtmlDocument();
+                            doc.LoadHtml(responseContent);
+
+                            List<Chapter> chapterList = new List<Chapter>();
+
+                            HtmlNodeCollection chapterNodes = doc.DocumentNode.SelectNodes("//ul[@class='cf']/li[not(contains(@class, 'divider-chap'))]/a");
+
+                            if (chapterNodes != null)
+                            {
+                                foreach (var chapterNode in chapterNodes)
+                                {
+                                    string chapterLabel = "";
+                                    string chapterName = "";
+                                    string chapterSlug = "";
+
+                                    if (chapterNode != null)
+                                    {
+                                        var chapterTitleParts = chapterNode.GetAttributeValue("title", "").Split(":");
+
+                                        chapterLabel = chapterTitleParts[0].Trim();
+
+                                        if (chapterTitleParts.Length > 1)
+                                        {
+                                            chapterName = String.Join(" : ", chapterTitleParts.Skip(1).Select(part => part.Trim()));
+                                        }
+
+                                        chapterSlug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[4];
+                                    }
+
+                                    Chapter chapter = new Chapter()
+                                    {
+                                        Label = chapterLabel,
+                                        Name = chapterName,
+                                        Slug = chapterSlug
+                                    };
+
+                                    chapterList.Add(chapter);
+                                }
+                            }
+
+                            chaptersResult.Data = chapterList;
+                        }
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                }
+            }
+
+            return chaptersResult;
         }
 
         public IEnumerable<Genre> GetGenres()
