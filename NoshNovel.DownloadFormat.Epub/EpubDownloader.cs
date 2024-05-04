@@ -32,9 +32,13 @@ namespace NoshNovel.DownloadFormat.Epub
                     string chapterContent = chapter.Content
                             .Replace("<br>", "<br></br>")
                             .Replace("<hr>", "<hr></hr>")
-                            .Replace("&nbsp;", " ")
-                            .Replace("&quot;", "\"")
-                            .Replace("&hellip;", "...");
+                            .Replace("&nbsp;", " ").Replace("&#160;", " ")
+                            .Replace("&#8216;", "‘").Replace("&lsquo;", "‘")
+                            .Replace("&#8217;", "’").Replace("&rsquo;", "’")
+                            .Replace("&#8220;", "“").Replace("&ldquo;", "“")
+                            .Replace("&#8221;", "”").Replace("&rdquo;", "”")
+                            .Replace("&#34;", "”").Replace("&quot;", "\"")
+                            .Replace("&#8230;", "...").Replace("&hellip;", "...");
 
                     doc.AddSection($"{chapterLabel}", $"""
                         <h2 style="text-align: center; color: green; margin-top: 0">{chapterLabel}</h2>
