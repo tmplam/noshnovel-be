@@ -1,8 +1,8 @@
+using NoshNovel.API.Middlewares;
 using NoshNovel.Factories.NovelCrawlers;
 using NoshNovel.Factories.NovelDownloaders;
-using NoshNovel.API.Middlewares;
-using Serilog;
 using QuestPDF.Infrastructure;
+using Serilog;
 QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +25,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+        });
+});
+
 // Add plugin service
 builder.Services.AddTransient<INovelCrawlerFactory, PluginNovelCrawlerFactory>();
 builder.Services.AddTransient<INovelDownloaderFactory, PluginNovelDownloaderFactory>();
@@ -37,6 +50,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Add Cors Policy
+app.UseCors("AllowAllOrigins");
 
 // Add middleware for global error catching
 app.UseMiddleware<ExceptionHandlerMiddleware>();

@@ -9,6 +9,7 @@ namespace NoshNovel.Models
         public string CoverImage { get; set; }
         public string NovelSlug { get; set; }
         public string Status { get; set; }
+        public string Description { get; set; }
         public IEnumerable<Genre> Genres { get; set; }
         public int TotalChapter { get; set; }
     }

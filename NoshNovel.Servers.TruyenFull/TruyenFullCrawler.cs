@@ -3,6 +3,7 @@ using NoshNovel.Models;
 using NoshNovel.Plugins;
 using NoshNovel.Plugins.Attributes;
 using NoshNovel.Plugins.Utilities;
+using System.Text.RegularExpressions;
 
 namespace NoshNovel.Servers.TruyenFull
 {
@@ -418,6 +419,7 @@ namespace NoshNovel.Servers.TruyenFull
                 contentNode.RemoveChild(firstDiv);
 
                 novelContent.Content = contentNode.InnerHtml;
+                novelContent.Content = Regex.Replace(novelContent.Content, "<script[^>]*>.*?</script>", "");
             }
 
             HtmlNode chapterNode = doc.DocumentNode.SelectSingleNode("//a[@class='chapter-title']");

@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoshNovel.DownloadFormat.Ep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.DownloadFormat.Pdf", "NoshNovel.DownloadFormat.Pdf\NoshNovel.DownloadFormat.Pdf.csproj", "{DDACCB0A-0B14-45BA-A306-F3226850D89E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Servers.TruyenChu", "NoshNovel.Servers.TruyenChu\NoshNovel.Servers.TruyenChu.csproj", "{A86E114E-DB32-42DF-BDE0-4340EBA45F97}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Servers.TangThuVien", "NoshNovel.Servers.TangThuVien\NoshNovel.Servers.TangThuVien.csproj", "{FD97D5DD-FA0B-4189-A053-03898368ACB3}"
 EndProject
 Global
@@ -53,6 +55,10 @@ Global
 		{DDACCB0A-0B14-45BA-A306-F3226850D89E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDACCB0A-0B14-45BA-A306-F3226850D89E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDACCB0A-0B14-45BA-A306-F3226850D89E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A86E114E-DB32-42DF-BDE0-4340EBA45F97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A86E114E-DB32-42DF-BDE0-4340EBA45F97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A86E114E-DB32-42DF-BDE0-4340EBA45F97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A86E114E-DB32-42DF-BDE0-4340EBA45F97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
