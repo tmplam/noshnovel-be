@@ -504,7 +504,66 @@ namespace NoshNovel.Servers.TangThuVien
 
         public NovelContent GetNovelContent(string novelSlug, string chapterSlug)
         {
-            throw new NotImplementedException();
+            var url = $"{baseUrl}/doc-truyen/{novelSlug}/{chapterSlug}";
+
+            NovelContent novelContentResult = new NovelContent();
+
+            using (HttpClient httpClient = new HttpClient())
+            {
+                try
+                {
+                    // make first request
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                    HttpResponseMessage response = httpClient.Send(request);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        // Decodes html-encoded
+                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        HtmlDocument doc = new HtmlDocument();
+                        doc.LoadHtml(responseContent);
+
+                        HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("//h1[@class='truyen-title']/a");
+
+                        if (titleNode != null)
+                        {
+                            novelContentResult.Title = titleNode.InnerText.Trim();
+                        }
+
+                        HtmlNode contentNode = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'box-chap') and not(contains(@class, 'hidden'))]");
+
+                        if (contentNode != null)
+                        {
+                            novelContentResult.Content = contentNode.InnerHtml;
+                        }
+
+                        novelContentResult.Chapter = new Chapter();
+
+                        HtmlNode chapterNode = doc.DocumentNode.SelectSingleNode("//div[@class='content']/div[@class='col-xs-12 chapter']/h2");
+
+                        if (chapterNode != null)
+                        {
+                            novelContentResult.Chapter.Slug = chapterSlug;
+
+                            var chapterParts = chapterNode.InnerText.Trim().Split(":");
+
+                            novelContentResult.Chapter.Label = chapterParts[0].Trim();
+
+                            if (chapterParts.Length > 1)
+                            {
+                                novelContentResult.Chapter.Name = String.Join(" : ", chapterParts.Skip(1).Select(part => part.Trim()));
+                            }
+                        }
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                }
+            }
+
+            return novelContentResult;
         }
 
         public NovelDetail GetNovelDetail(string novelSlug)
@@ -550,7 +609,7 @@ namespace NoshNovel.Servers.TangThuVien
 
                         if (novelDescriptionNode != null)
                         {
-                            novel.Description = novelDescriptionNode.InnerText.Trim();
+                            novel.Description = novelDescriptionNode.InnerHtml.Trim();
                         }
 
                         HtmlNode novelRatingNode = doc.DocumentNode.SelectSingleNode("//cite[@id='myrate']");
