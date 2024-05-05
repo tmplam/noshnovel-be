@@ -105,6 +105,7 @@ namespace NoshNovel.Servers.TangThuVien
                                             novelItem.NovelSlug = novelNode.SelectSingleNode("./div[@class='book-mid-info']/h4/a").GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3].Trim();
                                             novelItem.Status = novelNode.SelectSingleNode("./div[@class='book-mid-info']/p[@class='author']/span").InnerText.Trim();
                                             novelItem.TotalChapter = int.Parse(novelNode.SelectNodes("./div[@class='book-mid-info']/p[@class='author']/span")[1].SelectSingleNode("./span").InnerText);
+                                            novelItem.Description = novelNode.SelectNodes("./div[@class='book-mid-info']/p")[1].InnerText.Trim();
 
                                             novelItems.Add(novelItem);
 
@@ -259,6 +260,7 @@ namespace NoshNovel.Servers.TangThuVien
 
                                 novelItem.Status = novelNode.SelectSingleNode("./div[@class='book-mid-info']/p[@class='author']/span").InnerText.Trim();
                                 novelItem.TotalChapter = int.Parse(novelNode.SelectNodes("./div[@class='book-mid-info']/p[@class='author']/span")[1].SelectSingleNode("./span").InnerText);
+                                novelItem.Description = novelNode.SelectNodes("./div[@class='book-mid-info']/p")[1].InnerText.Trim();
 
                                 novelItems.Add(novelItem);
 
@@ -482,7 +484,14 @@ namespace NoshNovel.Servers.TangThuVien
                                 {
                                     string genreName = genreNameNode.InnerText.Trim();
                                     List<string> linkParts = new List<string>(genreLinkNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries));
-                                    string slug = linkParts.Count == 2 ? "ngon-tinh" : linkParts[3];
+
+                                    if (linkParts.Count == 2)
+                                    {
+                                        continue;
+                                    }
+
+                                    string slug = linkParts[3];
+
                                     Genre genre = new Genre()
                                     {
                                         Name = genreNameNode.InnerText.Trim(),
@@ -619,6 +628,13 @@ namespace NoshNovel.Servers.TangThuVien
                             novel.Rating = double.Parse(novelRatingNode.InnerText.Trim());
                         }
 
+                        // In subdomain ngontinh
+                        novelRatingNode = doc.DocumentNode.SelectSingleNode("//cite[@id='score1']");
+
+                        if (novelRatingNode != null)
+                        {
+                            novel.Rating = double.Parse(novelRatingNode.InnerText.Trim());
+                        }
 
                         HtmlNode novelStatusNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-info ']/p[@class='tag']/span");
 
