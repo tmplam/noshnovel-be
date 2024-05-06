@@ -1,6 +1,4 @@
-﻿using System.Net.Mime;
-using System.Runtime.CompilerServices;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using NoshNovel.Models;
 using NoshNovel.Plugins;
 using NoshNovel.Plugins.Attributes;
@@ -8,7 +6,7 @@ using NoshNovel.Plugins.Utilities;
 
 namespace NoshNovel.Servers.TangThuVien
 {
-    [NovelServer("tangthuvien.vn")]
+    [NovelServer("truyen.tangthuvien.vn")]
     public partial class TangThuVienCrawler : INovelCrawler
     {
         public NovelSearchResult FilterByGenre(string genre, int page = 1, int perPage = 18)
