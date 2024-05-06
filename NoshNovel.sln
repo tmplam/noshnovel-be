@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.DownloadFormat.Pd
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Servers.TruyenChu", "NoshNovel.Servers.TruyenChu\NoshNovel.Servers.TruyenChu.csproj", "{A86E114E-DB32-42DF-BDE0-4340EBA45F97}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Servers.TangThuVien", "NoshNovel.Servers.TangThuVien\NoshNovel.Servers.TangThuVien.csproj", "{FD97D5DD-FA0B-4189-A053-03898368ACB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
