@@ -3,7 +3,6 @@ using NoshNovel.Models;
 using NoshNovel.Plugins;
 using NoshNovel.Plugins.Attributes;
 using System.Text.RegularExpressions;
-using NoshNovel.Plugins.Utilities;
 using Newtonsoft.Json.Linq;
 
 namespace NoshNovel.Servers.TruyenChu
@@ -350,14 +349,11 @@ namespace NoshNovel.Servers.TruyenChu
             novelContent.Title = headerNode.SelectSingleNode(".//h1").InnerText.Trim();
 
             string chapterString = headerNode.SelectSingleNode(".//h2").InnerText.Trim();
-            Match match = Regex.Match(chapterString, @"\d+");
-            string chapterNumber = match.Success ? match.Value : "0"; // Lấy số đầu tiên trong chuỗi
-            string chapterName = match.Success ? chapterString.Substring(match.Index + match.Length).Trim() : chapterString;
 
             novelContent.Chapter = new Chapter()
             {
-                Label = $"Chương {chapterNumber}",
-                Name = chapterName,
+                Label = chapterString,
+                Name = string.Empty,
                 Slug = chapterSlug
             };
 

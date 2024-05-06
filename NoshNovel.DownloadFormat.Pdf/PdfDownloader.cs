@@ -91,11 +91,15 @@ namespace NoshNovel.DownloadFormat.Pdf
                     string content = chapter.Content
                         .Replace("<br>", "\r\n")
                         .Replace("&nbsp;", " ").Replace("&#160;", " ")
+                        .Replace("&#180;", "´").Replace("&acute;", "´")
                         .Replace("&#8216;", "‘").Replace("&lsquo;", "‘")
                         .Replace("&#8217;", "’").Replace("&rsquo;", "’")
                         .Replace("&#8220;", "“").Replace("&ldquo;", "“")
                         .Replace("&#8221;", "”").Replace("&rdquo;", "”")
+                        .Replace("&#8242;", "′").Replace("&prime;", "′")
+                        .Replace("&#8243;", "″").Replace("&Prime;", "″")
                         .Replace("&#34;", "”").Replace("&quot;", "\"")
+                        .Replace("&#39;", "'").Replace("&apos;", "'")
                         .Replace("&#8230;", "...").Replace("&hellip;", "...");
 
                     content = Regex.Replace(content, openTagPattern, "");
