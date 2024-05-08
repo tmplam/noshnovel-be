@@ -95,10 +95,37 @@ namespace NoshNovel.Servers.TangThuVien
                                             HtmlNode novelNode = novelNodes[j];
 
                                             novelItem.Title = novelNode.SelectSingleNode("./div[@class='book-mid-info']/h4/a").InnerText.Trim();
-                                            novelItem.Author = novelItem.Author = new Author()
+
+
+                                            // Author
+                                            HtmlNode authorNode = novelNode.SelectSingleNode("./div[@class='book-mid-info']/p[@class='author']/a[@class='name']");
+                                            if (authorNode != null)
                                             {
-                                                Name = novelNode.SelectSingleNode("./div[@class='book-mid-info']/p[@class='author']/a[@class='name']").InnerText.Trim(),
-                                            };
+                                                string[] authorLinkTokens = authorNode.GetAttributeValue("href", "").Split('=', StringSplitOptions.RemoveEmptyEntries);
+                                                novelItem.Author = novelItem.Author = new Author()
+                                                {
+                                                    Name = authorNode.InnerText.Trim(),
+                                                    Slug = authorLinkTokens[authorLinkTokens.Length - 1]
+                                                };
+
+                                                // Genre
+                                                HtmlNodeCollection infoLinkNodes = novelNode.SelectNodes("./div[@class='book-mid-info']/p[@class='author']/a");
+                                                HtmlNode genreNode = infoLinkNodes[infoLinkNodes.Count - 1];
+                                                if (genreNode != null && genreNode.Name == "a")
+                                                {
+                                                    string[] genreLinkTokens = genreNode.GetAttributeValue("href", "").Split('/', StringSplitOptions.RemoveEmptyEntries);
+                                                    List<Genre> genres = new List<Genre>()
+                                                    {
+                                                        new Genre()
+                                                        {
+                                                            Name = genreNode.InnerText.Trim(),
+                                                            Slug = genreLinkTokens[genreLinkTokens.Length - 1]
+                                                        }
+                                                    };
+                                                    novelItem.Genres = genres;
+                                                }
+                                            }
+
                                             novelItem.CoverImage = novelNode.SelectSingleNode("./div[@class='book-img-box']/a/img").GetAttributeValue("src", "").Trim();
                                             novelItem.NovelSlug = novelNode.SelectSingleNode("./div[@class='book-mid-info']/h4/a").GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3].Trim();
                                             novelItem.Status = novelNode.SelectSingleNode("./div[@class='book-mid-info']/p[@class='author']/span").InnerText.Trim();
@@ -236,10 +263,36 @@ namespace NoshNovel.Servers.TangThuVien
                                 HtmlNode novelNode = novelNodes[j];
 
                                 novelItem.Title = novelNode.SelectSingleNode("./div[@class='book-mid-info']/h4/a").InnerText.Trim();
-                                novelItem.Author = novelItem.Author = new Author()
+
+                                // Author
+                                HtmlNode authorNode = novelNode.SelectSingleNode("./div[@class='book-mid-info']/p[@class='author']/a[@class='name']");
+                                if (authorNode != null)
                                 {
-                                    Name = novelNode.SelectSingleNode("./div[@class='book-mid-info']/p[@class='author']/a[@class='name']").InnerText.Trim(),
-                                };
+                                    string[] authorLinkTokens = authorNode.GetAttributeValue("href", "").Split('=', StringSplitOptions.RemoveEmptyEntries);
+                                    novelItem.Author = novelItem.Author = new Author()
+                                    {
+                                        Name = authorNode.InnerText.Trim(),
+                                        Slug = authorLinkTokens[authorLinkTokens.Length - 1]
+                                    };
+
+                                    // Genre
+                                    HtmlNodeCollection infoLinkNodes = novelNode.SelectNodes("./div[@class='book-mid-info']/p[@class='author']/a");
+                                    HtmlNode genreNode = infoLinkNodes[infoLinkNodes.Count - 1];
+                                    if (genreNode != null && genreNode.Name == "a")
+                                    {
+                                        string[] genreLinkTokens = genreNode.GetAttributeValue("href", "").Split('/', StringSplitOptions.RemoveEmptyEntries);
+                                        List<Genre> genres = new List<Genre>()
+                                        {
+                                            new Genre()
+                                            {
+                                                Name = genreNode.InnerText.Trim(),
+                                                Slug = genreLinkTokens[genreLinkTokens.Length - 1]
+                                            }
+                                        };
+                                        novelItem.Genres = genres;
+                                    }
+                                }
+
                                 novelItem.CoverImage = novelNode.SelectSingleNode("./div[@class='book-img-box']/a/img").GetAttributeValue("src", "").Trim();
                                 // Get novel slug
                                 HtmlNode novelLinkNode = novelNode.SelectSingleNode("./div[@class='book-mid-info']/h4/a");
@@ -606,9 +659,11 @@ namespace NoshNovel.Servers.TangThuVien
 
                         if (novelAuthorNode != null)
                         {
+                            string[] authorLinkTokens = novelAuthorNode.GetAttributeValue("href", "").Split('=');
                             novel.Author = new Author()
                             {
                                 Name = novelAuthorNode.InnerText.Trim(),
+                                Slug = authorLinkTokens[authorLinkTokens.Length - 1]
                             };
                         }
 
@@ -632,6 +687,13 @@ namespace NoshNovel.Servers.TangThuVien
                         if (novelRatingNode != null)
                         {
                             novel.Rating = double.Parse(novelRatingNode.InnerText.Trim());
+                        }
+
+                        HtmlNode reviewsNumberNode = doc.DocumentNode.SelectSingleNode("//p[@id='j_userCount']").SelectSingleNode(".//span");
+
+                        if (reviewsNumberNode != null)
+                        {
+                            novel.ReviewsNumber = int.Parse(reviewsNumberNode.InnerText.Trim());
                         }
 
                         HtmlNode novelStatusNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-info ']/p[@class='tag']/span");

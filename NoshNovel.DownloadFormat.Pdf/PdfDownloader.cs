@@ -4,7 +4,6 @@ using NoshNovel.Plugins.Attributes;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using System.IO;
 using System.Text.RegularExpressions;
 
 namespace NoshNovel.DownloadFormat.Pdf
@@ -103,8 +102,10 @@ namespace NoshNovel.DownloadFormat.Pdf
                         .Replace("&#8230;", "...").Replace("&hellip;", "...");
 
                     content = Regex.Replace(content, openTagPattern, "");
-                    content = Regex.Replace(content, closeTagPattern, "\r\n");
-                    content = Regex.Replace(content, multipleLineBreakPattern, "\r\n\r\n");
+                    content = Regex.Replace(content, closeTagPattern, Environment.NewLine);
+
+                    content = Regex.Replace(content, multipleLineBreakPattern, $"{Environment.NewLine}{Environment.NewLine}");
+                    content = Regex.Replace(content, @"(?<!\r?\n)\r?\n(?!\r?\n)", $"{Environment.NewLine}{Environment.NewLine}");
 
                     string chapterLabel = chapter.Chapter.Label + (string.IsNullOrWhiteSpace(chapter.Chapter.Name) ? "" : $" - {chapter.Chapter.Name}");
 

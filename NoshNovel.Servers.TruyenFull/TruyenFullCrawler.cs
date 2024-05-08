@@ -30,8 +30,8 @@ namespace NoshNovel.Servers.TruyenFull
 
             if (paginationNode != null)
             {
-                HtmlNode lastNode = paginationNode.Descendants("li").LastOrDefault().SelectSingleNode(".//a");
-                HtmlNode penultimateNode = paginationNode.Descendants("li").LastOrDefault().PreviousSibling.SelectSingleNode(".//a");
+                HtmlNode lastNode = paginationNode.Descendants("li")!.LastOrDefault()!.SelectSingleNode(".//a");
+                HtmlNode penultimateNode = paginationNode.Descendants("li")!.LastOrDefault()!.PreviousSibling.SelectSingleNode(".//a");
 
                 string pageString = penultimateNode.GetAttributeValue("title", "");
 
@@ -155,8 +155,8 @@ namespace NoshNovel.Servers.TruyenFull
 
             if (paginationNode != null)
             {
-                HtmlNode lastNode = paginationNode.Descendants("li").LastOrDefault().SelectSingleNode(".//a");
-                HtmlNode penultimateNode = paginationNode.Descendants("li").LastOrDefault().PreviousSibling.SelectSingleNode(".//a");
+                HtmlNode lastNode = paginationNode.Descendants("li")!.LastOrDefault()!.SelectSingleNode(".//a");
+                HtmlNode penultimateNode = paginationNode.Descendants("li")!.LastOrDefault()!.PreviousSibling.SelectSingleNode(".//a");
 
                 string pageString = penultimateNode.GetAttributeValue("title", "");
 
@@ -323,8 +323,11 @@ namespace NoshNovel.Servers.TruyenFull
                 genreList.Add(genre);
             }
             novel.Genres = genreList;
-            novel.Status = infoNode.SelectNodes("div")[3].SelectSingleNode("span").InnerText.Trim();
+
+            HtmlNodeCollection infoCollection = infoNode.SelectNodes("div");
+            novel.Status = infoCollection[infoCollection.Count() - 1].SelectSingleNode("span").InnerText.Trim();
             novel.Rating = double.Parse(doc.DocumentNode.SelectSingleNode("//span[@itemprop='ratingValue']").InnerText) / 2;
+            novel.ReviewsNumber = int.Parse(doc.DocumentNode.SelectSingleNode("//span[@itemprop='ratingCount']").InnerText);
             novel.Description = doc.DocumentNode.SelectSingleNode("//div[@itemprop='description']").InnerHtml;
 
             return novel;
