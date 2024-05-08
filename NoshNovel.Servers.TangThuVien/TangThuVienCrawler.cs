@@ -606,9 +606,11 @@ namespace NoshNovel.Servers.TangThuVien
 
                         if (novelAuthorNode != null)
                         {
+                            string[] authorLink = novelAuthorNode.GetAttributeValue("href", "").Split('=');
                             novel.Author = new Author()
                             {
                                 Name = novelAuthorNode.InnerText.Trim(),
+                                Slug = authorLink[1]
                             };
                         }
 
@@ -632,6 +634,13 @@ namespace NoshNovel.Servers.TangThuVien
                         if (novelRatingNode != null)
                         {
                             novel.Rating = double.Parse(novelRatingNode.InnerText.Trim());
+                        }
+
+                        HtmlNode reviewsNumberNode = doc.DocumentNode.SelectSingleNode("//p[@id='j_userCount']").SelectSingleNode(".//span");
+
+                        if (reviewsNumberNode != null)
+                        {
+                            novel.ReviewsNumber = int.Parse(reviewsNumberNode.InnerText.Trim());
                         }
 
                         HtmlNode novelStatusNode = doc.DocumentNode.SelectSingleNode("//div[@class='book-info ']/p[@class='tag']/span");

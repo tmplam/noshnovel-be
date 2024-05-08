@@ -23,12 +23,11 @@
 
 ```html
 <script>
-        src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"
-        integrity="sha512-7rhBJh1om/W5Ztx7WiYOR9h2wlSaTmPyQMoHFtbT/FVNIA12y6S6I8HY9mrBS1uJ3dSU/R3qaSAXsGYuRjMDxg=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-    >
-</script>
+    src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"
+    integrity="sha512-7rhBJh1om/W5Ztx7WiYOR9h2wlSaTmPyQMoHFtbT/FVNIA12y6S6I8HY9mrBS1uJ3dSU/R3qaSAXsGYuRjMDxg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+></script>
 <script>
     var connection = new signalR.HubConnectionBuilder()
         .withUrl('https://localhost:7264/service-update')

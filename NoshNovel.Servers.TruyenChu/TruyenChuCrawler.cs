@@ -404,13 +404,16 @@ namespace NoshNovel.Servers.TruyenChu
             novel.Status = statusNode.InnerText.Trim();
 
             HtmlNode ratingNode = doc.DocumentNode.SelectSingleNode(".//span[@itemprop='ratingValue']");
+            HtmlNode reviewsNumberNode = doc.DocumentNode.SelectSingleNode(".//span[@itemprop='ratingCount']");
             try
             {
                 novel.Rating = double.Parse(ratingNode.InnerText.Trim());
+                novel.ReviewsNumber = int.Parse(reviewsNumberNode.InnerText.Trim());
             }
             catch (Exception)
             {
                 novel.Rating = 0;
+                novel.ReviewsNumber = 0;
             }
 
             string intro = doc.DocumentNode.SelectSingleNode(".//div[@id='bookIntro']").InnerHtml;
