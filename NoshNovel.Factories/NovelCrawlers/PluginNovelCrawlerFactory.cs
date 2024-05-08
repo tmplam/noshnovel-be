@@ -14,7 +14,7 @@ namespace NoshNovel.Factories.NovelCrawlers
 
         public PluginNovelCrawlerFactory(IConfiguration configuration)
         {
-            pluginPath = configuration["PluginPaths:NovelServer"];
+            pluginPath = configuration["PluginPaths:NovelServer"] ?? Directory.GetCurrentDirectory();
 
             if (pluginPath == null)
             {
