@@ -1,4 +1,6 @@
 using NoshNovel.API.Middlewares;
+using NoshNovel.API.Notifications;
+using NoshNovel.API.Notifications.FileWatcherService;
 using NoshNovel.Factories.NovelCrawlers;
 using NoshNovel.Factories.NovelDownloaders;
 using QuestPDF.Infrastructure;
@@ -25,22 +27,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSignalR();
+
 // Add CORS services
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
-        builder =>
-        {
-            builder
-            .AllowAnyOrigin()
+    options.AddPolicy("AllowAllOrigins", builder => {
+        builder.AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowAnyHeader();
-        });
+            .SetIsOriginAllowed((host) => true)
+            .AllowCredentials();
+    });
 });
 
 // Add plugin service
 builder.Services.AddTransient<INovelCrawlerFactory, PluginNovelCrawlerFactory>();
 builder.Services.AddTransient<INovelDownloaderFactory, PluginNovelDownloaderFactory>();
+builder.Services.AddSingleton<IPluginWatcher, PluginWatcher>();
 
 var app = builder.Build();
 
@@ -51,7 +54,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Add Cors Policy
+// Add cors policy
 app.UseCors("AllowAllOrigins");
 
 // Add middleware for global error catching
@@ -59,7 +62,12 @@ app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+//app.UseAuthorization();
+
+app.MapHub<ServiceUpdateHub>("/service-update");
+
+// Start watching on plugin service update
+app.Services.GetService<IPluginWatcher>()?.StartWatcher();
 
 app.MapControllers();
 

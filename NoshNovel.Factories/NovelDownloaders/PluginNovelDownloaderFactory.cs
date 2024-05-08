@@ -13,7 +13,7 @@ namespace NoshNovel.Factories.NovelDownloaders
 
         public PluginNovelDownloaderFactory(IConfiguration configuration)
         {
-            pluginPath = configuration["PluginPaths:NovelDownloader"];
+            pluginPath = configuration["PluginPaths:NovelDownloader"] ?? Directory.GetCurrentDirectory();
 
             if (pluginPath == null)
             {
