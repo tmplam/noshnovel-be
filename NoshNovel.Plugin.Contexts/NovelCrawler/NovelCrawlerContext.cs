@@ -4,23 +4,6 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
 {
     public partial class NovelCrawlerContext : INovelCrawlerContext
     {
-        public NovelSearchResult FilterByGenre(string genre, int page = 1, int perPage = 18)
-        {
-            LoadPlugins();
-            NovelSearchResult novelSearchResult;
-            if (novelCrawler != null)
-            {
-                novelSearchResult = novelCrawler.FilterByGenre(genre, page, perPage);
-            }
-            else
-            {
-                novelSearchResult = new NovelSearchResult();
-            }
-            RemovePlugin();
-
-            return novelSearchResult;
-        }
-
         public IEnumerable<string> GetNovelCrawlerServers()
         {
             List<string> servers = new List<string>();
@@ -46,13 +29,13 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             this.novelServer = novelServer;
         }
 
-        public NovelSearchResult GetByKeyword(string keyword, int page = 1, int perPage = 18)
+        public async Task<NovelSearchResult> FilterByGenre(string genre, int page = 1, int perPage = 18)
         {
             LoadPlugins();
             NovelSearchResult novelSearchResult;
             if (novelCrawler != null)
             {
-                novelSearchResult = novelCrawler.GetByKeyword(keyword, page, perPage);
+                novelSearchResult = await novelCrawler.FilterByGenre(genre, page, perPage);
             }
             else
             {
@@ -63,13 +46,30 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             return novelSearchResult;
         }
 
-        public NovelChaptersResult GetChapterList(string novelSlug, int page = 1, int perPage = 40)
+        public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
+        {
+            LoadPlugins();
+            NovelSearchResult novelSearchResult;
+            if (novelCrawler != null)
+            {
+                novelSearchResult = await novelCrawler.GetByKeyword(keyword, page, perPage);
+            }
+            else
+            {
+                novelSearchResult = new NovelSearchResult();
+            }
+            RemovePlugin();
+
+            return novelSearchResult;
+        }
+
+        public async Task<NovelChaptersResult> GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
             LoadPlugins();
             NovelChaptersResult novelChaptersResult;
             if (novelCrawler != null)
             {
-                novelChaptersResult = novelCrawler.GetChapterList(novelSlug, page, perPage);
+                novelChaptersResult = await novelCrawler.GetChapterList(novelSlug, page, perPage);
             }
             else
             {
@@ -80,13 +80,13 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             return novelChaptersResult;
         }
 
-        public IEnumerable<Genre> GetGenres()
+        public async Task<IEnumerable<Genre>> GetGenres()
         {
             LoadPlugins();
             IEnumerable<Genre> genreList;
             if (novelCrawler != null)
             {
-                genreList = novelCrawler.GetGenres();
+                genreList = await novelCrawler.GetGenres();
             }
             else
             {
@@ -97,13 +97,13 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             return genreList;
         }
 
-        public NovelContent GetNovelContent(string novelSlug, string chapterSlug)
+        public async Task<NovelContent> GetNovelContent(string novelSlug, string chapterSlug)
         {
             LoadPlugins();
             NovelContent novelContent;
             if (novelCrawler != null)
             {
-                novelContent = novelCrawler.GetNovelContent(novelSlug, chapterSlug);
+                novelContent = await novelCrawler.GetNovelContent(novelSlug, chapterSlug);
             }
             else
             {
@@ -114,13 +114,13 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             return novelContent;
         }
 
-        public NovelDetail GetNovelDetail(string novelSlug)
+        public async Task<NovelDetail> GetNovelDetail(string novelSlug)
         {
             LoadPlugins();
             NovelDetail novelDetail;
             if (novelCrawler != null)
             {
-                novelDetail = novelCrawler.GetNovelDetail(novelSlug);
+                novelDetail = await novelCrawler.GetNovelDetail(novelSlug);
             }
             else
             {

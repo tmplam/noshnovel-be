@@ -4,22 +4,36 @@ using NoshNovel.Plugin.Strategies;
 using NoshNovel.Plugin.Strategies.Attributes;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
+using System.Net;
+using System;
 
 namespace NoshNovel.Server.TruyenChuStrategy
 {
     [NovelServer("truyenchu.com.vn")]
     public partial class TruyenChuCrawlerStrategy : INovelCrawlerStrategy
     {
-        public NovelSearchResult FilterByGenre(string genre, int page = 1, int perPage = 18)
+        public async Task<NovelSearchResult> FilterByGenre(string genre, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
             int firstCrawledPage = startPosition / maxPerCrawlPage + 1;
             int crawlPosition = startPosition % maxPerCrawlPage - 1;
 
-            HtmlWeb web = new HtmlWeb();
             string url = $"{baseUrl}/{genre}?page=1";
-            HtmlDocument doc = web.Load(url);
+            using HttpClient httpClient = new HttpClient();
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                // Xử lí trả lỗi
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
 
             // Calculate total crawled pages
             int totalNovels = 0;
@@ -39,7 +53,17 @@ namespace NoshNovel.Server.TruyenChuStrategy
             for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
             {
                 url = $"{baseUrl}/{genre}?page={i}";
-                doc = web.Load(url);
+                requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                responseMessage = await httpClient.SendAsync(requestMessage);
+
+                if (!responseMessage.IsSuccessStatusCode)
+                {
+                    // Xử lí trả lỗi
+                }
+
+                htmlContent = await responseMessage.Content.ReadAsStringAsync();
+                htmlContent = WebUtility.HtmlDecode(htmlContent);
+                doc.LoadHtml(htmlContent);
 
                 var novelNodes = doc.DocumentNode.SelectNodes("//article");
 
@@ -122,7 +146,7 @@ namespace NoshNovel.Server.TruyenChuStrategy
             return response;
         }
 
-        public NovelSearchResult GetByKeyword(string keyword, int page = 1, int perPage = 18)
+        public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
@@ -130,10 +154,22 @@ namespace NoshNovel.Server.TruyenChuStrategy
             int crawlPosition = startPosition % maxPerCrawlPage - 1;
 
             keyword = string.Join("+", keyword.Split(" ", StringSplitOptions.RemoveEmptyEntries));
-
-            HtmlWeb web = new HtmlWeb();
             string url = $"{baseUrl}/tim-kiem/?keyword={keyword}&page=1";
-            HtmlDocument doc = web.Load(url);
+
+            using HttpClient httpClient = new HttpClient();
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                // Xử lí trả lỗi
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
 
             // Calculate total crawled pages
             int totalNovels = 0;
@@ -153,7 +189,17 @@ namespace NoshNovel.Server.TruyenChuStrategy
             for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
             {
                 url = $"{baseUrl}/tim-kiem?keyword={keyword}&page={i}";
-                doc = web.Load(url);
+                requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                responseMessage = await httpClient.SendAsync(requestMessage);
+
+                if (!responseMessage.IsSuccessStatusCode)
+                {
+                    // Xử lí trả lỗi
+                }
+
+                htmlContent = await responseMessage.Content.ReadAsStringAsync();
+                htmlContent = WebUtility.HtmlDecode(htmlContent);
+                doc.LoadHtml(htmlContent);
 
                 var novelNodes = doc.DocumentNode.SelectNodes("//article");
 
@@ -236,7 +282,7 @@ namespace NoshNovel.Server.TruyenChuStrategy
             return response;
         }
 
-        public NovelChaptersResult GetChapterList(string novelSlug, int page = 1, int perPage = 40)
+        public async Task<NovelChaptersResult> GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
             NovelChaptersResult response = new NovelChaptersResult();
             response.Page = page;
@@ -247,9 +293,22 @@ namespace NoshNovel.Server.TruyenChuStrategy
             int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + 1;
             int crawlPosition = startPosition % maxPerCrawledChaptersPage - 1;
 
-            HtmlWeb web = new HtmlWeb();
             var novelUrl = $"{baseUrl}/truyen/{novelSlug}";
-            HtmlDocument doc = web.Load(novelUrl);
+
+            using HttpClient httpClient = new HttpClient();
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, novelUrl);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                // Xử lí trả lỗi
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
 
             var script = doc.DocumentNode.SelectSingleNode("//script[contains(@id,'__NEXT_DATA__')]");
             string jsonString = script.InnerText;
@@ -267,8 +326,18 @@ namespace NoshNovel.Server.TruyenChuStrategy
             List<Chapter> chapters = new List<Chapter>();
             for (int i = firstCrawledPage; i <= totalCrawlPages && chapterCountDown > 0; i++)
             {
-                var url = $"{novelUrl}?page={i}";
-                doc = web.Load(url);
+                var pageUrl = $"{novelUrl}?page={i}";
+                requestMessage = new HttpRequestMessage(HttpMethod.Get, pageUrl);
+                responseMessage = await httpClient.SendAsync(requestMessage);
+
+                if (!responseMessage.IsSuccessStatusCode)
+                {
+                    // Xử lí trả lỗi
+                }
+
+                htmlContent = await responseMessage.Content.ReadAsStringAsync();
+                htmlContent = WebUtility.HtmlDecode(htmlContent);
+                doc.LoadHtml(htmlContent);
 
                 script = doc.DocumentNode.SelectSingleNode("//script[contains(@id,'__NEXT_DATA__')]");
                 jsonString = script.InnerText;
@@ -313,10 +382,23 @@ namespace NoshNovel.Server.TruyenChuStrategy
             return response;
         }
 
-        public IEnumerable<Genre> GetGenres()
+        public async Task<IEnumerable<Genre>> GetGenres()
         {
-            HtmlWeb web = new HtmlWeb();
-            var doc = web.Load(baseUrl);
+            var url = baseUrl;
+            using HttpClient httpClient = new HttpClient();
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                // Xử lí trả lỗi
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
 
             var genreListNode = doc.DocumentNode.SelectSingleNode("//div[@class='hidden grid grid-cols-1 py-2 sm:grid-cols-2']");
 
@@ -337,12 +419,24 @@ namespace NoshNovel.Server.TruyenChuStrategy
             return genres;
         }
 
-        public NovelContent GetNovelContent(string novelSlug, string chapterSlug)
+        public async Task<NovelContent> GetNovelContent(string novelSlug, string chapterSlug)
         {
             var novelContent = new NovelContent();
 
-            HtmlWeb web = new HtmlWeb();
-            HtmlDocument doc = web.Load($"{baseUrl}/truyen/{novelSlug}/{chapterSlug}");
+            var novelUrl = $"{baseUrl}/truyen/{novelSlug}/{chapterSlug}";
+            using HttpClient httpClient = new HttpClient();
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, novelUrl);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                // Xử lí trả lỗi
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
 
 
             var headerNode = doc.DocumentNode.SelectSingleNode(".//header[@class='chapter-bg-color chapter-content-size mx-auto']");
@@ -363,12 +457,25 @@ namespace NoshNovel.Server.TruyenChuStrategy
             return novelContent;
         }
 
-        public NovelDetail GetNovelDetail(string novelSlug)
+        public async Task<NovelDetail> GetNovelDetail(string novelSlug)
         {
             NovelDetail novel = new NovelDetail();
 
-            HtmlWeb web = new HtmlWeb();
-            HtmlDocument doc = web.Load($"{baseUrl}/truyen/{novelSlug}");
+            var url = $"{baseUrl}/truyen/{novelSlug}";
+            using HttpClient httpClient = new HttpClient();
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                // Xử lí trả lỗi
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
 
             HtmlNode coverImageNode = doc.DocumentNode.SelectSingleNode(".//img[@class='w-full object-cover object-center']");
             novel.CoverImage = coverImageNode.GetAttributeValue("src", string.Empty);

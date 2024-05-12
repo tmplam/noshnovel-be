@@ -3,13 +3,14 @@ using NoshNovel.Models;
 using NoshNovel.Plugin.Strategies;
 using NoshNovel.Plugin.Strategies.Attributes;
 using NoshNovel.Plugin.Strategies.Utilities;
+using System.Net;
 
 namespace NoshNovel.Server.TangThuVienStrategy
 {
     [NovelServer("truyen.tangthuvien.vn")]
     public partial class TangThuVienCrawlerStrategy : INovelCrawlerStrategy
     {
-        public NovelSearchResult FilterByGenre(string genre, int page = 1, int perPage = 18)
+        public async Task<NovelSearchResult> FilterByGenre(string genre, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
@@ -29,13 +30,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                 {
                     // make first request
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    HttpResponseMessage response = httpClient.Send(request);
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        string responseContent = await response.Content.ReadAsStringAsync();
                         // Decodes html-encoded
-                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        responseContent = WebUtility.HtmlDecode(responseContent);
                         HtmlDocument doc = new HtmlDocument();
                         doc.LoadHtml(responseContent);
 
@@ -47,13 +48,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                             string newUrl = showMoreNode.GetAttributeValue("href", "");
                             // Make second request
                             request = new HttpRequestMessage(HttpMethod.Get, newUrl);
-                            response = httpClient.Send(request);
+                            response = await httpClient.SendAsync(request);
 
                             if (response.IsSuccessStatusCode)
                             {
-                                responseContent = response.Content.ReadAsStringAsync().Result;
+                                responseContent = await response.Content.ReadAsStringAsync();
                                 // Decodes html-encoded
-                                responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                                responseContent = WebUtility.HtmlDecode(responseContent);
                                 doc.LoadHtml(responseContent);
 
                                 HtmlNodeCollection paginationElementNodes = doc.DocumentNode.SelectNodes("//ul[@class='pagination']/li/a");
@@ -75,13 +76,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                                             // Make more requests
                                             url = $"{newUrl}&page={i}";
                                             request = new HttpRequestMessage(HttpMethod.Get, url);
-                                            response = httpClient.Send(request);
+                                            response = await httpClient.SendAsync(request);
 
                                             if (response.IsSuccessStatusCode)
                                             {
                                                 responseContent = response.Content.ReadAsStringAsync().Result;
                                                 // Decodes html-encoded
-                                                responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                                                responseContent = WebUtility.HtmlDecode(responseContent);
                                                 doc.LoadHtml(responseContent);
                                             }
                                         }
@@ -152,9 +153,9 @@ namespace NoshNovel.Server.TangThuVienStrategy
 
                                     if (response.IsSuccessStatusCode)
                                     {
-                                        responseContent = response.Content.ReadAsStringAsync().Result;
+                                        responseContent = await response.Content.ReadAsStringAsync();
                                         // Decodes html-encoded
-                                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                                        responseContent = WebUtility.HtmlDecode(responseContent);
                                         doc.LoadHtml(responseContent);
 
                                         int totalNovels = 0;
@@ -184,7 +185,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
             return searchResult;
         }
 
-        public NovelSearchResult GetByKeyword(string keyword, int page = 1, int perPage = 18)
+        public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
@@ -204,13 +205,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                 {
                     // make first request
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    HttpResponseMessage response = httpClient.Send(request);
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        string responseContent = await response.Content.ReadAsStringAsync();
                         // Decodes html-encoded
-                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        responseContent = WebUtility.HtmlDecode(responseContent);
                         HtmlDocument doc = new HtmlDocument();
                         doc.LoadHtml(responseContent);
 
@@ -237,13 +238,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                                 // Make more requests
                                 url = $"{baseUrl}/ket-qua-tim-kiem?term={keyword}&page={i}";
                                 request = new HttpRequestMessage(HttpMethod.Get, url);
-                                response = httpClient.Send(request);
+                                response = await httpClient.SendAsync(request);
 
                                 if (response.IsSuccessStatusCode)
                                 {
-                                    responseContent = response.Content.ReadAsStringAsync().Result;
+                                    responseContent = await response.Content.ReadAsStringAsync();
                                     // Decodes html-encoded
-                                    responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                                    responseContent = WebUtility.HtmlDecode(responseContent);
                                     doc.LoadHtml(responseContent);
                                 }
                             }
@@ -333,9 +334,9 @@ namespace NoshNovel.Server.TangThuVienStrategy
 
                         if (response.IsSuccessStatusCode)
                         {
-                            responseContent = response.Content.ReadAsStringAsync().Result;
+                            responseContent = await response.Content.ReadAsStringAsync();
                             // Decodes html-encoded
-                            responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                            responseContent = WebUtility.HtmlDecode(responseContent);
                             doc.LoadHtml(responseContent);
 
                             int totalNovels = 0;
@@ -362,7 +363,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
             return searchResult;
         }
 
-        public NovelChaptersResult GetChapterList(string novelSlug, int page = 1, int perPage = 40)
+        public async Task<NovelChaptersResult> GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
             var url = $"{baseUrl}/doc-truyen/{novelSlug}";
 
@@ -376,13 +377,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                 {
                     // make first request
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    HttpResponseMessage response = httpClient.Send(request);
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        string responseContent = await response.Content.ReadAsStringAsync();
                         // Decodes html-encoded
-                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        responseContent = WebUtility.HtmlDecode(responseContent);
                         HtmlDocument doc = new HtmlDocument();
                         doc.LoadHtml(responseContent);
 
@@ -417,9 +418,9 @@ namespace NoshNovel.Server.TangThuVienStrategy
 
                             if (response.IsSuccessStatusCode)
                             {
-                                responseContent = response.Content.ReadAsStringAsync().Result;
+                                responseContent = await response.Content.ReadAsStringAsync();
                                 // Decodes html-encoded
-                                responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                                responseContent = WebUtility.HtmlDecode(responseContent);
                                 doc = new HtmlDocument();
                                 doc.LoadHtml(responseContent);
 
@@ -442,13 +443,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                         url = $"{baseUrl}/doc-truyen/page/{novelId}?page={page - 1}&limit={perPage}&web=1";
 
                         request = new HttpRequestMessage(HttpMethod.Get, url);
-                        response = httpClient.Send(request);
+                        response = await httpClient.SendAsync(request);
                         // get chapters
                         if (response.IsSuccessStatusCode)
                         {
-                            responseContent = response.Content.ReadAsStringAsync().Result;
+                            responseContent = await response.Content.ReadAsStringAsync();
                             // Decodes html-encoded
-                            responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                            responseContent = WebUtility.HtmlDecode(responseContent);
                             doc = new HtmlDocument();
                             doc.LoadHtml(responseContent);
 
@@ -460,9 +461,9 @@ namespace NoshNovel.Server.TangThuVienStrategy
                             {
                                 foreach (var chapterNode in chapterNodes)
                                 {
-                                    string chapterLabel = "";
-                                    string chapterName = "";
-                                    string chapterSlug = "";
+                                    string chapterLabel = string.Empty;
+                                    string chapterName = string.Empty;
+                                    string chapterSlug = string.Empty;
 
                                     if (chapterNode != null)
                                     {
@@ -472,7 +473,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
 
                                         if (chapterTitleParts.Length > 1)
                                         {
-                                            chapterName = String.Join(" : ", chapterTitleParts.Skip(1).Select(part => part.Trim()));
+                                            chapterName = string.Join(" : ", chapterTitleParts.Skip(1).Select(part => part.Trim()));
                                         }
 
                                         chapterSlug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[4];
@@ -502,7 +503,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
             return chaptersResult;
         }
 
-        public IEnumerable<Genre> GetGenres()
+        public async Task<IEnumerable<Genre>> GetGenres()
         {
             var url = baseUrl;
             List<Genre> genres = new List<Genre>();
@@ -512,13 +513,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                 try
                 {
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    HttpResponseMessage response = httpClient.Send(request);
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        string responseContent = await response.Content.ReadAsStringAsync();
                         // decodes html-encoded
-                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        responseContent = WebUtility.HtmlDecode(responseContent);
                         HtmlDocument doc = new HtmlDocument();
                         doc.LoadHtml(responseContent);
                         HtmlNodeCollection genreNodes = doc.DocumentNode.SelectNodes("//div[@id='classify-list']/dl/dd");
@@ -562,7 +563,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
             return genres;
         }
 
-        public NovelContent GetNovelContent(string novelSlug, string chapterSlug)
+        public async Task<NovelContent> GetNovelContent(string novelSlug, string chapterSlug)
         {
             var url = $"{baseUrl}/doc-truyen/{novelSlug}/{chapterSlug}";
 
@@ -574,13 +575,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                 {
                     // make first request
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    HttpResponseMessage response = httpClient.Send(request);
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        string responseContent = await response.Content.ReadAsStringAsync();
                         // Decodes html-encoded
-                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        responseContent = WebUtility.HtmlDecode(responseContent);
                         HtmlDocument doc = new HtmlDocument();
                         doc.LoadHtml(responseContent);
 
@@ -626,7 +627,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
             return novelContentResult;
         }
 
-        public NovelDetail GetNovelDetail(string novelSlug)
+        public async Task<NovelDetail> GetNovelDetail(string novelSlug)
         {
             var url = $"{baseUrl}/doc-truyen/{novelSlug}";
 
@@ -638,13 +639,13 @@ namespace NoshNovel.Server.TangThuVienStrategy
                 {
                     // make request
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    HttpResponseMessage response = httpClient.Send(request);
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        string responseContent = await response.Content.ReadAsStringAsync();
                         // Decodes html-encoded
-                        responseContent = System.Net.WebUtility.HtmlDecode(responseContent);
+                        responseContent = WebUtility.HtmlDecode(responseContent);
                         HtmlDocument doc = new HtmlDocument();
                         doc.LoadHtml(responseContent);
 
