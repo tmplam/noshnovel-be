@@ -1,8 +1,8 @@
 using NoshNovel.API.Middlewares;
 using NoshNovel.API.Notifications;
 using NoshNovel.API.Notifications.FileWatcherService;
-using NoshNovel.Factories.NovelCrawlers;
-using NoshNovel.Factories.NovelDownloaders;
+using NoshNovel.Plugin.Contexts.NovelCrawler;
+using NoshNovel.Plugin.Contexts.NovelDownloader;
 using QuestPDF.Infrastructure;
 using Serilog;
 QuestPDF.Settings.License = LicenseType.Community;
@@ -41,8 +41,8 @@ builder.Services.AddCors(options =>
 });
 
 // Add plugin service
-builder.Services.AddTransient<INovelCrawlerFactory, PluginNovelCrawlerFactory>();
-builder.Services.AddTransient<INovelDownloaderFactory, PluginNovelDownloaderFactory>();
+builder.Services.AddTransient<INovelCrawlerContext, NovelCrawlerContext>();
+builder.Services.AddTransient<INovelDownloaderContext, NovelDownloaderContext>();
 builder.Services.AddSingleton<IPluginWatcher, PluginWatcher>();
 
 var app = builder.Build();

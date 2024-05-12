@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NoshNovel.Factories.NovelCrawlers;
-using NoshNovel.Factories.NovelDownloaders;
+using NoshNovel.Plugin.Contexts.NovelCrawler;
+using NoshNovel.Plugin.Contexts.NovelDownloader;
 using NoshNovel.Models;
-using NoshNovel.Plugins;
-using NoshNovel.Plugins.Utilities;
+using NoshNovel.Plugin.Strategies.Utilities;
 
 namespace NoshNovel.API.Controllers
 {
@@ -12,15 +11,15 @@ namespace NoshNovel.API.Controllers
     public class NovelsController : ControllerBase
     {
         private readonly ILogger<NovelsController> logger;
-        private readonly INovelCrawlerFactory novelCrawlerFactory;
-        private readonly INovelDownloaderFactory novelDownloaderFactory;
+        private readonly INovelCrawlerContext novelCrawlerContext;
+        private readonly INovelDownloaderContext novelDownloaderContext;
 
-        public NovelsController(ILogger<NovelsController> logger, INovelCrawlerFactory novelCrawlerFactory, 
-            INovelDownloaderFactory novelDownloaderFactory)
+        public NovelsController(ILogger<NovelsController> logger, INovelCrawlerContext novelCrawlerContext, 
+            INovelDownloaderContext novelDownloaderContext)
         {
             this.logger = logger;
-            this.novelCrawlerFactory = novelCrawlerFactory;
-            this.novelDownloaderFactory = novelDownloaderFactory;
+            this.novelCrawlerContext = novelCrawlerContext;
+            this.novelDownloaderContext = novelDownloaderContext;
         }
 
         [HttpGet]
@@ -28,8 +27,8 @@ namespace NoshNovel.API.Controllers
         public IActionResult SearchByKeyword([FromQuery] string server, [FromQuery] string keyword,
             [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
-            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
-            NovelSearchResult response = novelCrawler.GetByKeyword(keyword, page, perPage);
+            novelCrawlerContext.SetNovelCrawlerStrategy(server);
+            NovelSearchResult response = novelCrawlerContext.GetByKeyword(keyword, page, perPage);
             return Ok(response);
         }
 
@@ -38,8 +37,8 @@ namespace NoshNovel.API.Controllers
         public IActionResult SearchByGenre([FromQuery] string server, [FromQuery] string genre,
             [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
-            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
-            NovelSearchResult response = novelCrawler.FilterByGenre(genre, page, perPage);
+            novelCrawlerContext.SetNovelCrawlerStrategy(server);
+            NovelSearchResult response = novelCrawlerContext.FilterByGenre(genre, page, perPage);
             return Ok(response);
         }
 
@@ -47,8 +46,8 @@ namespace NoshNovel.API.Controllers
         [Route("genres")]
         public IActionResult GetGenres([FromQuery] string server)
         {
-            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
-            IEnumerable<Genre> response = novelCrawler.GetGenres();
+            novelCrawlerContext.SetNovelCrawlerStrategy(server);
+            IEnumerable<Genre> response = novelCrawlerContext.GetGenres();
             return Ok(response);
         }
 
@@ -56,7 +55,7 @@ namespace NoshNovel.API.Controllers
         [Route("servers")]
         public IActionResult GetServers()
         {
-            IEnumerable<string> servers = novelCrawlerFactory.GetNovelCrawlerServers();
+            IEnumerable<string> servers = novelCrawlerContext.GetNovelCrawlerServers();
             return Ok(servers);
         }
 
@@ -64,8 +63,8 @@ namespace NoshNovel.API.Controllers
         [Route("detail")]
         public IActionResult GetDetail([FromQuery] string server, [FromQuery] string novelSlug)
         {
-            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
-            NovelDetail novelDetail = novelCrawler.GetNovelDetail(novelSlug);
+            novelCrawlerContext.SetNovelCrawlerStrategy(server);
+            NovelDetail novelDetail = novelCrawlerContext.GetNovelDetail(novelSlug);
             return Ok(novelDetail);
         }
 
@@ -73,8 +72,8 @@ namespace NoshNovel.API.Controllers
         [Route("chapters")]
         public IActionResult GetChapters([FromQuery] string server, [FromQuery] string novelSlug, int page = 1, int perPage = 40)
         {
-            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
-            NovelChaptersResult novelChaptersResult = novelCrawler.GetChapterList(novelSlug, page, perPage);
+            novelCrawlerContext.SetNovelCrawlerStrategy(server);
+            NovelChaptersResult novelChaptersResult = novelCrawlerContext.GetChapterList(novelSlug, page, perPage);
             return Ok(novelChaptersResult);
         }
 
@@ -82,8 +81,8 @@ namespace NoshNovel.API.Controllers
         [Route("content")]
         public IActionResult GetContent([FromQuery] string server, [FromQuery] string novelSlug, string chapterSlug)
         {
-            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(server);
-            NovelContent novelContent = novelCrawler.GetNovelContent(novelSlug, chapterSlug);
+            novelCrawlerContext.SetNovelCrawlerStrategy(server);
+            NovelContent novelContent = novelCrawlerContext.GetNovelContent(novelSlug, chapterSlug);
             return Ok(novelContent);
         }
 
@@ -91,7 +90,7 @@ namespace NoshNovel.API.Controllers
         [Route("file-extensions")]
         public IActionResult GetDownloadFileExtensions()
         {
-            IEnumerable<string> fileExtensions = novelDownloaderFactory.GetFileExtensions();
+            IEnumerable<string> fileExtensions = novelDownloaderContext.GetFileExtensions();
             return Ok(fileExtensions);
         }
 
@@ -100,24 +99,24 @@ namespace NoshNovel.API.Controllers
         [Route("download")]
         public async Task<IActionResult> DownloadNovel([FromBody] NovelDownloadRequest novelDownloadRequest)
         {
-            INovelCrawler novelCrawler = novelCrawlerFactory.CreateNovelCrawler(novelDownloadRequest.Server);
-            INovelDownloader novelDownloader = novelDownloaderFactory.CreateNovelDownloader(novelDownloadRequest.FileExtension);
+            novelCrawlerContext.SetNovelCrawlerStrategy(novelDownloadRequest.Server);
+            novelDownloaderContext.SetNovelDownloaderStrategy(novelDownloadRequest.FileExtension);
 
             NovelDownloadObject novelDownloadObject = new NovelDownloadObject()
             {
-                NovelDetail = novelCrawler.GetNovelDetail(novelDownloadRequest.NovelSlug),
+                NovelDetail = novelCrawlerContext.GetNovelDetail(novelDownloadRequest.NovelSlug),
             };
 
             List<NovelContent> downloadChapters = new List<NovelContent>();
             foreach (var chapterSlug in novelDownloadRequest.ChapterSlugs)
             {
-                NovelContent novelContent = novelCrawler.GetNovelContent(novelDownloadRequest.NovelSlug, chapterSlug);
+                NovelContent novelContent = novelCrawlerContext.GetNovelContent(novelDownloadRequest.NovelSlug, chapterSlug);
                 downloadChapters.Add(novelContent);
             }
             novelDownloadObject.DownloadChapters = downloadChapters;
             novelDownloadObject.NovelStyling = novelDownloadRequest.NovelStyling;
 
-            Stream novelFileStream = await novelDownloader.GetFileStream(novelDownloadObject);
+            Stream novelFileStream = await novelDownloaderContext.GetFileStream(novelDownloadObject);
             
             string fileName = $"{HelperClass.GenerateSlug(novelDownloadObject.NovelDetail.Title)}.{novelDownloadRequest.FileExtension.ToLower()}";
 

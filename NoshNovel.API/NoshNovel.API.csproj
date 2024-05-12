@@ -17,8 +17,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NoshNovel.Models\NoshNovel.Models.csproj" />
-    <ProjectReference Include="..\NoshNovel.Plugins\NoshNovel.Plugins.csproj" />
-    <ProjectReference Include="..\NoshNovel.Factories\NoshNovel.Factories.csproj" />
+    <ProjectReference Include="..\NoshNovel.Plugin.Contexts\NoshNovel.Plugin.Contexts.csproj" />
+    <ProjectReference Include="..\NoshNovel.Plugin.Strategies\NoshNovel.Plugin.Strategies.csproj" />
   </ItemGroup>
 
   <ItemGroup>

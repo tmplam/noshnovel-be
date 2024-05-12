@@ -15,9 +15,9 @@
 
 **Notes:**
 
-> -   If you want to create a plugin for novel crawler server, you have to create a class that implement the `INovelCrawler` interface in `NosNovel.Plugins` project. You have to add host name for the crawler by using NoverServerAttribute.
-> -   If you want to create a plugin for novel download extension, you have to create a class that implement the `INovelDownload` interface in `NosNovel.Plugins` project. You have to add file extension name for the class by using FileExtensionAttribute.
-> -   It is recommended that you use the available HtmlAgilityPack Package in `NoshNovel.Plugins` project. If not, you have to move the .dll file of the package that you to the build output directory so that the program can load it.
+> -   If you want to create a plugin for novel crawler server, you have to create a class that implement the `INovelCrawlerStrategy` interface in `NosNovel.Plugin.Strategies` project. You have to add host name for the crawler by using NoverServerAttribute.
+> -   If you want to create a plugin for novel download extension, you have to create a class that implement the `INovelDownloadStrategy` interface in `NosNovel.Plugin.Strategies` project. You have to add file extension name for the class by using FileExtensionAttribute.
+> -   It is recommended that you use the available HtmlAgilityPack Package in `NoshNovel.Plugin.Strategies` project. If not, you have to move the .dll file of the package that you to the build output directory so that the program can load it.
 
 ## SignalR notify on plugin service change
 
