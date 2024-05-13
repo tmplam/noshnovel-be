@@ -1,4 +1,6 @@
 ﻿using NoshNovel.Models;
+using NoshNovel.Plugin.Strategies.Exeptions;
+using System.Net;
 
 namespace NoshNovel.Plugin.Contexts.NovelCrawler
 {
@@ -39,7 +41,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
             else
             {
-                novelSearchResult = new NovelSearchResult();
+                throw new RequestExeption(HttpStatusCode.NotFound, "Server not found!");
             }
             RemovePlugin();
 
@@ -56,7 +58,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
             else
             {
-                novelSearchResult = new NovelSearchResult();
+                throw new RequestExeption(HttpStatusCode.NotFound, "Server not found!");
             }
             RemovePlugin();
 
@@ -73,7 +75,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
             else
             {
-                novelChaptersResult = new NovelChaptersResult();
+                throw new RequestExeption(HttpStatusCode.NotFound, "Server not found!");
             }
             RemovePlugin();
 
@@ -90,7 +92,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
             else
             {
-                genreList = new List<Genre>();
+                throw new RequestExeption(HttpStatusCode.NotFound, "Server not found!");
             }
             RemovePlugin();
 
@@ -107,7 +109,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
             else
             {
-                novelContent= new NovelContent();
+                throw new RequestExeption(HttpStatusCode.NotFound, "Server not found!");
             }
             RemovePlugin();
 
@@ -124,7 +126,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
             else
             {
-                novelDetail= new NovelDetail();
+                throw new RequestExeption(HttpStatusCode.NotFound, "Server not found!");
             }
             RemovePlugin();
 

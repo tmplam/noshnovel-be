@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.61" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="QuestPDF" Version="2024.3.3" />
+    <PackageReference Include="QuestPDF" Version="2024.3.5" />
     <PackageReference Include="QuickEPUB" Version="1.2.0" />
   </ItemGroup>
 

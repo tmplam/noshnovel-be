@@ -1,5 +1,6 @@
 ﻿using NoshNovel.Models;
-using NoshNovel.Plugin.Strategies;
+using NoshNovel.Plugin.Strategies.Exeptions;
+using System.Net;
 
 namespace NoshNovel.Plugin.Contexts.NovelDownloader
 {
@@ -37,6 +38,10 @@ namespace NoshNovel.Plugin.Contexts.NovelDownloader
             if (novelDownloader != null)
             {
                 novelFileStream = await novelDownloader.GetFileStream(novelDownloadObject);
+            }
+            else
+            {
+                throw new RequestExeption(HttpStatusCode.NotFound, "File format not found!");
             }
             RemovePlugin();
 

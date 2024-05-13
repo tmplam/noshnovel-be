@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using NoshNovel.Factories.AssemblyLoadContexts;
-using NoshNovel.Models;
 using NoshNovel.Plugin.Strategies;
 using NoshNovel.Plugin.Strategies.Attributes;
 using System.Reflection;
@@ -19,9 +18,11 @@ namespace NoshNovel.Plugin.Contexts.NovelDownloader
         public NovelDownloaderContext(IConfiguration configuration)
         {
             fileExtension = string.Empty;
-            pluginPath = configuration["PluginPaths:NovelDownloader"] ?? Directory.GetCurrentDirectory();
+            pluginPath = configuration["PluginPaths:NovelDownloader"] ?? string.Empty;
+            // Compatible with all operating sysrem
+            pluginPath = pluginPath.Replace('/', Path.DirectorySeparatorChar);
 
-            if (pluginPath == null)
+            if (string.IsNullOrEmpty(pluginPath))
             {
                 throw new Exception("Can't find downloader plugin path!");
             }

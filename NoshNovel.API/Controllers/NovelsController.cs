@@ -14,7 +14,7 @@ namespace NoshNovel.API.Controllers
         private readonly ILogger<NovelsController> logger;
         private readonly INovelCrawlerContext novelCrawlerContext;
         private readonly INovelDownloaderContext novelDownloaderContext;
-        TruyenChuCrawlerStrategy truyenChuCrawlerStrategy { get; set; }
+        TruyenChuCrawlerStrategy truyenChuCrawlerStrategy;
 
         public NovelsController(ILogger<NovelsController> logger, INovelCrawlerContext novelCrawlerContext, 
             INovelDownloaderContext novelDownloaderContext)

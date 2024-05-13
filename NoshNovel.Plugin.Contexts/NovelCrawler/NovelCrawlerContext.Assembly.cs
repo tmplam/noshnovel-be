@@ -18,9 +18,11 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
         public NovelCrawlerContext(IConfiguration configuration)
         {
             novelServer = string.Empty;
-            pluginPath = configuration["PluginPaths:NovelServer"] ?? Directory.GetCurrentDirectory();
+            pluginPath = configuration["PluginPaths:NovelServer"] ?? string.Empty;
+            // Compatible with all operating sysrem
+            pluginPath = pluginPath.Replace('/', Path.DirectorySeparatorChar);
 
-            if (pluginPath == null)
+            if (string.IsNullOrEmpty(pluginPath))
             {
                 throw new Exception("Can't find server plugin path!");
             }

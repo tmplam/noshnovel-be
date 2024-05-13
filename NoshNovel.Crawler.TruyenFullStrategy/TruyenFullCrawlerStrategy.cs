@@ -2,6 +2,7 @@
 using NoshNovel.Models;
 using NoshNovel.Plugin.Strategies;
 using NoshNovel.Plugin.Strategies.Attributes;
+using NoshNovel.Plugin.Strategies.Exeptions;
 using NoshNovel.Plugin.Strategies.Utilities;
 using System;
 using System.Net;
@@ -30,7 +31,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
             }
 
             string htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -71,7 +72,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
                 if (!responseMessage.IsSuccessStatusCode)
                 {
-                    // Xử lí trả lỗi
+                    throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
                 }
 
                 htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -135,7 +136,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
             }
 
             htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -192,7 +193,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "Genre not found in crawled server");
             }
 
             string htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -233,7 +234,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
                 if (!responseMessage.IsSuccessStatusCode)
                 {
-                    // Xử lí trả lỗi
+                    throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
                 }
 
                 htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -300,7 +301,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
             }
 
             htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -342,7 +343,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
             }
 
             string htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -390,7 +391,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "Novel not found in crawled server");
             }
 
             string htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -454,7 +455,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "Novel not found in crawled server");
             }
 
             string htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -476,7 +477,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
                 if (!responseMessage.IsSuccessStatusCode)
                 {
-                    // Xử lí trả lỗi
+                    throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
                 }
 
                 htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -520,7 +521,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
             }
 
             htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -556,7 +557,7 @@ namespace NoshNovel.Server.TruyenFullStrategy
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                // Xử lí trả lỗi
+                throw new RequestExeption(HttpStatusCode.NotFound, "Novel not found in crawled server");
             }
 
             string htmlContent = await responseMessage.Content.ReadAsStringAsync();
@@ -565,29 +566,35 @@ namespace NoshNovel.Server.TruyenFullStrategy
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(htmlContent);
 
-            novelContent.Title = doc.DocumentNode.SelectSingleNode("//a[@class='truyen-title']").InnerText.Trim();
-
-
-            HtmlNode firstDiv = doc.DocumentNode.SelectSingleNode("//div[@itemprop='articleBody']/div");
-            if (firstDiv != null)
+            try
             {
-                HtmlNode contentNode = firstDiv.ParentNode;
-                contentNode.RemoveChild(firstDiv);
+                novelContent.Title = doc.DocumentNode.SelectSingleNode("//a[@class='truyen-title']").InnerText.Trim();
 
-                novelContent.Content = contentNode.InnerHtml;
-                novelContent.Content = Regex.Replace(novelContent.Content, "<script[^>]*>.*?</script>", "");
+                HtmlNode firstDiv = doc.DocumentNode.SelectSingleNode("//div[@itemprop='articleBody']/div");
+                if (firstDiv != null)
+                {
+                    HtmlNode contentNode = firstDiv.ParentNode;
+                    contentNode.RemoveChild(firstDiv);
+
+                    novelContent.Content = contentNode.InnerHtml;
+                    novelContent.Content = Regex.Replace(novelContent.Content, "<script[^>]*>.*?</script>", "");
+                }
+
+                HtmlNode chapterNode = doc.DocumentNode.SelectSingleNode("//a[@class='chapter-title']");
+                string[] chapterTokens = chapterNode.InnerText.Split(":", 2, StringSplitOptions.RemoveEmptyEntries);
+
+                novelContent.Chapter = new Chapter();
+                novelContent.Chapter.Label = chapterTokens[0].Trim();
+                novelContent.Chapter.Slug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3];
+
+                if (chapterTokens.Length > 1)
+                {
+                    novelContent.Chapter.Name = chapterTokens[1].Trim().Capitalize();
+                }
             }
-
-            HtmlNode chapterNode = doc.DocumentNode.SelectSingleNode("//a[@class='chapter-title']");
-            string[] chapterTokens = chapterNode.InnerText.Split(":", 2, StringSplitOptions.RemoveEmptyEntries);
-
-            novelContent.Chapter = new Chapter();
-            novelContent.Chapter.Label = chapterTokens[0].Trim();
-            novelContent.Chapter.Slug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3];
-
-            if (chapterTokens.Length > 1)
+            catch (Exception)
             {
-                novelContent.Chapter.Name = chapterTokens[1].Trim().Capitalize();
+                throw new RequestExeption(HttpStatusCode.NotFound, "Chapter not found in crawled server");
             }
 
             return novelContent;
