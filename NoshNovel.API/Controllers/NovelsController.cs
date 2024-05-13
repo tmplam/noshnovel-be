@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NoshNovel.Models;
 using NoshNovel.Plugin.Contexts.NovelCrawler;
 using NoshNovel.Plugin.Contexts.NovelDownloader;
-using NoshNovel.Models;
 using NoshNovel.Plugin.Strategies.Utilities;
-using NoshNovel.Server.TruyenChuStrategy;
 
 namespace NoshNovel.API.Controllers
 {
@@ -14,7 +13,6 @@ namespace NoshNovel.API.Controllers
         private readonly ILogger<NovelsController> logger;
         private readonly INovelCrawlerContext novelCrawlerContext;
         private readonly INovelDownloaderContext novelDownloaderContext;
-        TruyenChuCrawlerStrategy truyenChuCrawlerStrategy;
 
         public NovelsController(ILogger<NovelsController> logger, INovelCrawlerContext novelCrawlerContext, 
             INovelDownloaderContext novelDownloaderContext)
@@ -22,7 +20,6 @@ namespace NoshNovel.API.Controllers
             this.logger = logger;
             this.novelCrawlerContext = novelCrawlerContext;
             this.novelDownloaderContext = novelDownloaderContext;
-            truyenChuCrawlerStrategy = new();
         }
 
         [HttpGet]
@@ -85,7 +82,7 @@ namespace NoshNovel.API.Controllers
         public async Task<IActionResult> GetContent([FromQuery] string server, [FromQuery] string novelSlug, string chapterSlug)
         {
             novelCrawlerContext.SetNovelCrawlerStrategy(server);
-            NovelContent novelContent = await truyenChuCrawlerStrategy.GetNovelContent(novelSlug, chapterSlug);
+            NovelContent novelContent = await novelCrawlerContext.GetNovelContent(novelSlug, chapterSlug);
             return Ok(novelContent);
         }
 

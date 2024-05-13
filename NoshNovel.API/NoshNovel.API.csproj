@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NoshNovel.Crawler.TruyenChuStrategy\NoshNovel.Crawler.TruyenChuStrategy.csproj" />
+    <ProjectReference Include="..\NoshNovel.Models\NoshNovel.Models.csproj" />
     <ProjectReference Include="..\NoshNovel.Plugin.Contexts\NoshNovel.Plugin.Contexts.csproj" />
     <ProjectReference Include="..\NoshNovel.Plugin.Strategies\NoshNovel.Plugin.Strategies.csproj" />
   </ItemGroup>
