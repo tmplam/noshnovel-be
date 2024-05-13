@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using NoshNovel.Plugin.Strategies.Exeptions;
+using System.Net;
 
 namespace NoshNovel.API.Middlewares
 {
@@ -20,11 +21,25 @@ namespace NoshNovel.API.Middlewares
                 // If anything happens during the call
                 await next(httpContext);
             }
+            catch(RequestExeption ex)
+            {
+                httpContext.Response.StatusCode = (int) ex.StatusCode;
+                httpContext.Response.ContentType = "application/json";
+
+                var error = new
+                {
+                    ErrorId = Guid.NewGuid(),
+                    RequestUrl = $"{httpContext.Request.Path}{httpContext.Request.QueryString}",
+                    ErrorMessage = ex.Message,
+                };
+
+                await httpContext.Response.WriteAsJsonAsync(error);
+            }
             catch (Exception ex)
             {
                 var errorId = Guid.NewGuid();
-
-                // Log this Exception
+                
+                // Log this unhandled Exception
                 logger.LogError(ex, $"{errorId} : {ex.Message}");
 
                 // Return a custom error response
@@ -34,7 +49,7 @@ namespace NoshNovel.API.Middlewares
                 var error = new
                 {
                     ErrorId = errorId,
-                    RequestUrl = httpContext.Request.Path,
+                    RequestUrl = $"{httpContext.Request.Path}{httpContext.Request.QueryString}",
                     ErrorMessage = ex.Message,
                 };
 
