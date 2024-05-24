@@ -16,8 +16,8 @@ namespace NoshNovel.Server.TruyenChuStrategy
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
-            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
-            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
             string url = $"{baseUrl}/{genre}?page=1";
             using HttpClient httpClient = new HttpClient();
@@ -159,8 +159,8 @@ namespace NoshNovel.Server.TruyenChuStrategy
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
-            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
-            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
             keyword = string.Join("+", keyword.Split(" ", StringSplitOptions.RemoveEmptyEntries));
             string url = $"{baseUrl}/tim-kiem/?keyword={keyword}&page=1";
@@ -378,6 +378,7 @@ namespace NoshNovel.Server.TruyenChuStrategy
                                 Label = $"Chương {(i - 1) * 50 + j + 1}",
                                 Name = crawlChapter.name,
                                 Slug = crawlChapter.slug,
+                                ChapterIndex = startPosition++
                             };
                             chapters.Add(chapter);
 

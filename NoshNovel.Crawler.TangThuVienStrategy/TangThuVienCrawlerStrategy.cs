@@ -14,9 +14,9 @@ namespace NoshNovel.Server.TangThuVienStrategy
         public async Task<NovelSearchResult> FilterByGenre(string genre, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
-            int startPosition = (page - 1) * perPage;
-            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
-            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
             genre = HelperClass.GenerateSlug(genre);
             var url = $"{baseUrl}/the-loai/{genre}";
@@ -190,9 +190,9 @@ namespace NoshNovel.Server.TangThuVienStrategy
         public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
-            int startPosition = (page - 1) * perPage;
-            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
-            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
             keyword = string.Join("%20", keyword.Split(" ", StringSplitOptions.RemoveEmptyEntries));
             var url = $"{baseUrl}/ket-qua-tim-kiem?term={keyword}";
@@ -369,6 +369,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
         public async Task<NovelChaptersResult> GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
             var url = $"{baseUrl}/doc-truyen/{novelSlug}";
+            int startPosition = (page - 1) * perPage + 1;
 
             NovelChaptersResult chaptersResult = new NovelChaptersResult();
             chaptersResult.Page = page;
@@ -488,7 +489,8 @@ namespace NoshNovel.Server.TangThuVienStrategy
                                 {
                                     Label = chapterLabel,
                                     Name = chapterName,
-                                    Slug = chapterSlug
+                                    Slug = chapterSlug,
+                                    ChapterIndex = startPosition++
                                 };
 
                                 chapterList.Add(chapter);

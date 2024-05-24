@@ -16,8 +16,8 @@ namespace NoshNovel.Server.TruyenFullStrategy
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
-            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
-            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
 
             keyword = string.Join("%20", keyword.Split(" ", StringSplitOptions.RemoveEmptyEntries));
@@ -167,8 +167,8 @@ namespace NoshNovel.Server.TruyenFullStrategy
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage + 1;
-            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
-            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
             genre = HelperClass.GenerateSlug(genre);
             // In case first page of genre search has 26 novels and 1 novel with no content
@@ -495,7 +495,10 @@ namespace NoshNovel.Server.TruyenFullStrategy
                         HtmlNode chapterNode = chapterList[j];
                         string[] chapterTokens = chapterNode.InnerText.Split(":", 2, StringSplitOptions.RemoveEmptyEntries);
 
-                        Chapter chapter = new Chapter();
+                        Chapter chapter = new Chapter()
+                        {
+                            ChapterIndex = startPosition++
+                        };
                         chapter.Label = chapterTokens[0].Trim();
                         chapter.Slug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3];
 
