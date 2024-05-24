@@ -15,8 +15,8 @@ namespace NoshNovel.Server.TangThuVienStrategy
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage;
-            int firstCrawledPage = startPosition / maxPerCrawlPage + 1;
-            int crawlPosition = startPosition % maxPerCrawlPage;
+            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
 
             genre = HelperClass.GenerateSlug(genre);
             var url = $"{baseUrl}/the-loai/{genre}";
@@ -191,8 +191,8 @@ namespace NoshNovel.Server.TangThuVienStrategy
         {
             // Calculate page and position to crawl
             int startPosition = (page - 1) * perPage;
-            int firstCrawledPage = startPosition / maxPerCrawlPage + 1;
-            int crawlPosition = startPosition % maxPerCrawlPage;
+            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
 
             keyword = string.Join("%20", keyword.Split(" ", StringSplitOptions.RemoveEmptyEntries));
             var url = $"{baseUrl}/ket-qua-tim-kiem?term={keyword}";
