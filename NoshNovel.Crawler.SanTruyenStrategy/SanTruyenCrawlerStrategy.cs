@@ -84,6 +84,11 @@ namespace NoshNovel.Server.SanTruyenStrategy
 
                     HtmlNodeCollection novelNodes = doc.DocumentNode.SelectNodes("//div[@class='stories']/div[@class='story-box']");
 
+                    if (novelNodes == null)
+                    {
+                        continue;
+                    }
+
                     for (int j = crawlPosition; j < novelNodes.Count; j++)
                     {
                         NovelItem novelItem = new NovelItem();
@@ -175,8 +180,6 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     responseContent = WebUtility.HtmlDecode(responseContent);
                     doc.LoadHtml(responseContent);
 
-                    int totalNovels = 0;
-
                     HtmlNodeCollection lastPageNodes = doc.DocumentNode.SelectNodes("//div[@class='stories']/div[@class='story-box']");
 
                     int novelOflastCrawedPage = 0;
@@ -186,7 +189,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                         novelOflastCrawedPage = lastPageNodes.Count;
                     }
 
-                    totalNovels = (totalCrawlPages - 1) * maxPerCrawlPage + novelOflastCrawedPage;
+                    int totalNovels = (totalCrawlPages - 1) * maxPerCrawlPage + novelOflastCrawedPage;
 
                     searchResult.Total = totalNovels;
                     searchResult.TotalPages = totalNovels / perPage + (totalNovels % perPage == 0 ? 0 : 1);
@@ -228,7 +231,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                 HtmlNodeCollection paginationElementNodes = doc.DocumentNode.SelectNodes("//ul[@class='pagination']/li[not(contains(@class, 'dropup')) and not(descendant::span[contains(@class, 'glyphicon')])]/a");
                 HtmlNode? lastPaginationElementNode = null;
 
-                if (paginationElementNodes.Count != 0)
+                if (paginationElementNodes != null && paginationElementNodes.Count != 0)
                 {
                     lastPaginationElementNode = paginationElementNodes[^1];
                 }
@@ -264,6 +267,11 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     }
 
                     HtmlNodeCollection novelNodes = doc.DocumentNode.SelectNodes("//div[@class='stories']/div[@class='story-box']");
+
+                    if (novelNodes == null)
+                    {
+                        continue;
+                    }
 
                     for (int j = crawlPosition; j < novelNodes.Count; j++)
                     {
@@ -347,8 +355,6 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     responseContent = WebUtility.HtmlDecode(responseContent);
                     doc.LoadHtml(responseContent);
 
-                    int totalNovels = 0;
-
                     HtmlNodeCollection lastPageNodes = doc.DocumentNode.SelectNodes("//div[@class='stories']/div[@class='story-box']");
 
                     int novelOflastCrawedPage = 0;
@@ -358,7 +364,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                         novelOflastCrawedPage = lastPageNodes.Count;
                     }
 
-                    totalNovels = (totalCrawlPages - 1) * maxPerCrawlPage + novelOflastCrawedPage;
+                    int totalNovels = (totalCrawlPages - 1) * maxPerCrawlPage + novelOflastCrawedPage;
 
                     searchResult.Total = totalNovels;
                     searchResult.TotalPages = totalNovels / perPage + (totalNovels % perPage == 0 ? 0 : 1);
@@ -400,7 +406,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                 HtmlNodeCollection paginationElementNodes = doc.DocumentNode.SelectNodes("//ul[@class='pagination']/li[not(contains(@class, 'dropup')) and not(descendant::span[contains(@class, 'glyphicon')])]/a");
                 HtmlNode? lastPaginationElementNode = null;
 
-                if (paginationElementNodes.Count != 0)
+                if (paginationElementNodes != null && paginationElementNodes.Count != 0)
                 {
                     lastPaginationElementNode = paginationElementNodes[^1];
                 }
@@ -436,7 +442,29 @@ namespace NoshNovel.Server.SanTruyenStrategy
                         doc.LoadHtml(responseContent);
                     }
 
-                    HtmlNodeCollection chapterNodes = doc.DocumentNode.SelectNodes("//ul[contains(@class, 'list-chapter')]/li/a");
+                    HtmlNodeCollection chapterListNodes = doc.DocumentNode.SelectNodes("//div[@id='chapter-list']");
+
+                    if (chapterListNodes == null)
+                    {
+                        continue;
+                    }
+
+                    HtmlNodeCollection? chapterNodes = null;
+
+                    if (chapterListNodes.Count == 1)
+                    {
+                        chapterNodes = chapterListNodes[0].SelectNodes("./ul[contains(@class, 'list-chapter')]/li/a");
+                    }
+                    else
+                    {
+                        chapterNodes = chapterListNodes[1].SelectNodes("./ul[contains(@class, 'list-chapter')]/li/a");
+                    }
+
+                    if (chapterNodes == null)
+                    {
+                        continue;
+                    }
+
 
                     for (int j = crawlPosition; j < chapterNodes.Count; j++)
                     {
@@ -482,7 +510,6 @@ namespace NoshNovel.Server.SanTruyenStrategy
                 chaptersResult.Data = chapterList;
 
                 url = $"{baseUrl}/{novelSlug}/trang-{totalCrawlPages}/";
-                Console.WriteLine(url);
                 // Calculate total novels
                 request = new HttpRequestMessage(HttpMethod.Get, url);
                 response = httpClient.Send(request);
@@ -494,9 +521,24 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     responseContent = WebUtility.HtmlDecode(responseContent);
                     doc.LoadHtml(responseContent);
 
-                    int totalChapters = 0;
 
-                    HtmlNodeCollection lastPageNodes = doc.DocumentNode.SelectNodes("//ul[@class='list-chapter']/li/a");
+                    HtmlNodeCollection chapterListNodes = doc.DocumentNode.SelectNodes("//div[@id='chapter-list']");
+
+                    if (chapterListNodes == null)
+                    {
+                        return chaptersResult;
+                    }
+
+                    HtmlNodeCollection? lastPageNodes = null;
+
+                    if (chapterListNodes.Count == 1)
+                    {
+                        lastPageNodes = chapterListNodes[0].SelectNodes("./ul[contains(@class, 'list-chapter')]/li/a");
+                    }
+                    else
+                    {
+                        lastPageNodes = chapterListNodes[1].SelectNodes("./ul[contains(@class, 'list-chapter')]/li/a");
+                    }
 
                     int novelOflastCrawedPage = 0;
 
@@ -505,7 +547,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                         novelOflastCrawedPage = lastPageNodes.Count;
                     }
 
-                    totalChapters = (totalCrawlPages - 1) * maxPerCrawledChaptersPage + novelOflastCrawedPage;
+                    int totalChapters = (totalCrawlPages - 1) * maxPerCrawledChaptersPage + novelOflastCrawedPage;
 
                     chaptersResult.Total = totalChapters;
                     chaptersResult.TotalPages = totalChapters / perPage + (totalChapters % perPage == 0 ? 0 : 1);
