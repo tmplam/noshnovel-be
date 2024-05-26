@@ -4,9 +4,7 @@ using NoshNovel.Plugin.Strategies;
 using NoshNovel.Plugin.Strategies.Attributes;
 using NoshNovel.Plugin.Strategies.Exeptions;
 using NoshNovel.Plugin.Strategies.Utilities;
-using System;
 using System.Net;
-using System.Text.RegularExpressions;
 
 namespace NoshNovel.Server.SanTruyenStrategy
 {
@@ -15,9 +13,9 @@ namespace NoshNovel.Server.SanTruyenStrategy
     {
         public async Task<NovelSearchResult> FilterByGenre(string genre, int page = 1, int perPage = 18)
         {
-            int startPosition = (page - 1) * perPage;
-            int firstCrawledPage = startPosition / maxPerCrawlPage + 1;
-            int crawlPosition = startPosition % maxPerCrawlPage;
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
             genre = HelperClass.GenerateSlug(genre);
             string url = $"{baseUrl}/{genre}";
@@ -201,9 +199,9 @@ namespace NoshNovel.Server.SanTruyenStrategy
 
         public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
-            int startPosition = (page - 1) * perPage;
-            int firstCrawledPage = startPosition / maxPerCrawlPage + 1;
-            int crawlPosition = startPosition % maxPerCrawlPage;
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
 
             string url = $"{baseUrl}/tim-kiem/?tukhoa={keyword}";
 
@@ -376,9 +374,9 @@ namespace NoshNovel.Server.SanTruyenStrategy
 
         public async Task<NovelChaptersResult> GetChapterList(string novelSlug, int page = 1, int perPage = 40)
         {
-            int startPosition = (page - 1) * perPage;
-            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + 1;
-            int crawlPosition = startPosition % maxPerCrawledChaptersPage;
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawledChaptersPage + (startPosition % maxPerCrawledChaptersPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawledChaptersPage;
 
             string url = $"{baseUrl}/{novelSlug}";
 
@@ -493,7 +491,8 @@ namespace NoshNovel.Server.SanTruyenStrategy
                         {
                             Name = chapterName,
                             Slug = chapterSlug,
-                            Label = chapterLabel
+                            Label = chapterLabel,
+                            ChapterIndex = startPosition++
                         };
 
                         chapterList.Add(chapter);
