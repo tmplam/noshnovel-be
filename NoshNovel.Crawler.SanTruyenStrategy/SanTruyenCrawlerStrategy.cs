@@ -62,7 +62,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
 
                 for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
                 {
-                    if (firstCrawledPage > 1)
+                    if (i > 1)
                     {
                         // Make more requests
                         url = $"{baseUrl}/{genre}/trang-{i}";
@@ -246,7 +246,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
 
                 for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
                 {
-                    if (firstCrawledPage > 1)
+                    if (i > 1)
                     {
                         // Make more requests
                         url = $"{baseUrl}/tim-kiem/?tukhoa={keyword}&paged={i}";
@@ -422,7 +422,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
 
                 for (int i = firstCrawledPage; i <= totalCrawlPages && chapterCountDown > 0; i++)
                 {
-                    if (firstCrawledPage > 1)
+                    if (i > 1)
                     {
                         // Make more requests
                         url = $"{baseUrl}/{novelSlug}/trang-{i}";
@@ -474,17 +474,12 @@ namespace NoshNovel.Server.SanTruyenStrategy
 
                         chapterSlug = chapterNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3].Trim();
 
-                        var chapterTitleParts = chapterNode.GetAttributeValue("title", "").Split("-")[1].Split(":");
+                        var chapterTextParts = chapterNode.InnerText.Split(":", StringSplitOptions.RemoveEmptyEntries);
+                        chapterLabel = chapterTextParts[0].Trim();
 
-                        chapterLabel = chapterTitleParts[0].Trim();
-
-                        if (chapterTitleParts.Length == 2)
+                        if (chapterTextParts.Length > 1)
                         {
-                            chapterName = chapterTitleParts[1].Trim();
-                        }
-                        else if (chapterTitleParts.Length == 3)
-                        {
-                            chapterName = chapterTitleParts[2].Trim();
+                            chapterName = chapterTextParts[^1].Trim();
                         }
 
                         Chapter chapter = new Chapter()
