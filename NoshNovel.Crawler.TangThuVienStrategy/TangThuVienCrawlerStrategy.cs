@@ -70,7 +70,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
                                 for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
                                 {
                                     // If the first crawled page equals one, no need to make new request
-                                    if (firstCrawledPage > 1)
+                                    if (i > 1)
                                     {
                                         // Make more requests
                                         url = $"{newUrl}&page={i}";
@@ -233,7 +233,7 @@ namespace NoshNovel.Server.TangThuVienStrategy
                     for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
                     {
                         // If the first crawled page equals one, no need to make new request
-                        if (firstCrawledPage > 1)
+                        if (i > 1)
                         {
                             // Make more requests
                             url = $"{baseUrl}/ket-qua-tim-kiem?term={keyword}&page={i}";
