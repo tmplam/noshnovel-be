@@ -4,8 +4,8 @@ namespace NoshNovel.Models
 {
     public class ErrorResponse
     {
-        public int StatusCode { get; set; }
-        public string RequestId { get; set; }
-        public string Message { get; set; }
+        public Guid ErrorId { get; set; }
+        public string RequestUrl { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using NoshNovel.Plugin.Strategies.Exeptions;
+﻿using NoshNovel.Models;
+using NoshNovel.Plugin.Strategies.Exeptions;
 using System.Net;
 
 namespace NoshNovel.API.Middlewares
@@ -26,7 +27,7 @@ namespace NoshNovel.API.Middlewares
                 httpContext.Response.StatusCode = (int) ex.StatusCode;
                 httpContext.Response.ContentType = "application/json";
 
-                var error = new
+                var error = new ErrorResponse
                 {
                     ErrorId = Guid.NewGuid(),
                     RequestUrl = $"{httpContext.Request.Path}{httpContext.Request.QueryString}",
@@ -46,7 +47,7 @@ namespace NoshNovel.API.Middlewares
                 httpContext.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
                 httpContext.Response.ContentType = "application/json";
 
-                var error = new
+                var error = new ErrorResponse
                 {
                     ErrorId = errorId,
                     RequestUrl = $"{httpContext.Request.Path}{httpContext.Request.QueryString}",

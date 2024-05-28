@@ -22,8 +22,10 @@ namespace NoshNovel.API.Controllers
             this.novelDownloaderContext = novelDownloaderContext;
         }
 
-        [HttpGet]
-        [Route("search")]
+        [HttpGet, Route("search")]
+        [ProducesResponseType(200, Type = typeof(NovelSearchResult))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
         public async Task<IActionResult> SearchByKeyword([FromQuery] string server, [FromQuery] string keyword,
             [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
@@ -32,8 +34,10 @@ namespace NoshNovel.API.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        [Route("genre-filter")]
+        [HttpGet, Route("genre-filter")]
+        [ProducesResponseType(200, Type = typeof(NovelSearchResult))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
         public async Task<IActionResult> SearchByGenre([FromQuery] string server, [FromQuery] string genre,
             [FromQuery] int page = 1, [FromQuery] int perPage = 18)
         {
@@ -42,8 +46,10 @@ namespace NoshNovel.API.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        [Route("genres")]
+        [HttpGet, Route("genres")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<Genre>))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
         public async Task<IActionResult> GetGenres([FromQuery] string server)
         {
             novelCrawlerContext.SetNovelCrawlerStrategy(server);
@@ -51,16 +57,18 @@ namespace NoshNovel.API.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        [Route("servers")]
+        [HttpGet, Route("servers")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<string>))]
         public IActionResult GetServers()
         {
             IEnumerable<string> servers = novelCrawlerContext.GetNovelCrawlerServers();
             return Ok(servers);
         }
 
-        [HttpGet]
-        [Route("detail")]
+        [HttpGet, Route("detail")]
+        [ProducesResponseType(200, Type = typeof(NovelDetail))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
         public async Task<IActionResult> GetDetail([FromQuery] string server, [FromQuery] string novelSlug)
         {
             novelCrawlerContext.SetNovelCrawlerStrategy(server);
@@ -68,8 +76,10 @@ namespace NoshNovel.API.Controllers
             return Ok(novelDetail);
         }
 
-        [HttpGet]
-        [Route("chapters")]
+        [HttpGet, Route("chapters")]
+        [ProducesResponseType(200, Type = typeof(NovelChaptersResult))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
         public async Task<IActionResult> GetChapters([FromQuery] string server, [FromQuery] string novelSlug, int page = 1, int perPage = 40)
         {
             novelCrawlerContext.SetNovelCrawlerStrategy(server);
@@ -77,8 +87,10 @@ namespace NoshNovel.API.Controllers
             return Ok(novelChaptersResult);
         }
 
-        [HttpGet]
-        [Route("content")]
+        [HttpGet, Route("content")]
+        [ProducesResponseType(200, Type = typeof(NovelContent))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
         public async Task<IActionResult> GetContent([FromQuery] string server, [FromQuery] string novelSlug, string chapterSlug)
         {
             novelCrawlerContext.SetNovelCrawlerStrategy(server);
@@ -86,17 +98,18 @@ namespace NoshNovel.API.Controllers
             return Ok(novelContent);
         }
 
-        [HttpGet]
-        [Route("file-extensions")]
+        [HttpGet, Route("file-extensions")]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<string>))]
         public IActionResult GetDownloadFileExtensions()
         {
             IEnumerable<string> fileExtensions = novelDownloaderContext.GetFileExtensions();
             return Ok(fileExtensions);
         }
 
-        // GET: api/download/{fileName}
-        [HttpPost]
-        [Route("download")]
+        [HttpPost, Route("download")]
+        [ProducesResponseType(200, Type = typeof(FileStreamResult))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
         public async Task<IActionResult> DownloadNovel([FromBody] NovelDownloadRequest novelDownloadRequest)
         {
             novelCrawlerContext.SetNovelCrawlerStrategy(novelDownloadRequest.Server);
