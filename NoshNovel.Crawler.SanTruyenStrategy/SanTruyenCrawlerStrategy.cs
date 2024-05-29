@@ -5,6 +5,7 @@ using NoshNovel.Plugin.Strategies.Attributes;
 using NoshNovel.Plugin.Strategies.Exeptions;
 using NoshNovel.Plugin.Strategies.Utilities;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace NoshNovel.Server.SanTruyenStrategy
 {
@@ -720,16 +721,10 @@ namespace NoshNovel.Server.SanTruyenStrategy
                         Slug = ""
                     };
 
-                    HtmlNodeCollection decriptionNodes = novelDetailNode.SelectNodes("./div[@class='story-info']/div[@class='story-desc']/p");
-
-                    for (var i = 0; i < decriptionNodes.Count - 1; i++)
-                    {
-                        if (i != 0)
-                        {
-                            novel.Description += " ";
-                        }
-                        novel.Description += decriptionNodes[i].InnerText.Trim();
-                    }
+                    var description = novelDetailNode.SelectSingleNode("./div[@class='story-info']/div[@class='story-desc']").InnerHtml;
+                    Regex descriptionRegex = new Regex(@"href\s*=\s*""[^""]*""");
+                    description = descriptionRegex.Replace(description, "href=\"#\"");
+                    novel.Description = description;
 
                     novel.Rating = double.Parse(novelDetailNode.SelectSingleNode("./div[@class='story-info']/div[@class='star-rating']/p[@class='score']/span[@itemprop='ratingValue']").InnerText.Trim());
                     novel.ReviewsNumber = int.Parse(novelDetailNode.SelectSingleNode("./div[@class='story-info']/div[@class='star-rating']/p[@class='score']/span[@itemprop='ratingCount']").InnerText.Trim());
