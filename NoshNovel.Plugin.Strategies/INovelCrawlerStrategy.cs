@@ -6,6 +6,7 @@ namespace NoshNovel.Plugin.Strategies
     {
         Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18);
         Task<NovelSearchResult> FilterByGenre(string genre, int page = 1, int perPage = 18);
+        Task<NovelSearchResult> FilterByAuthor(string author, int page = 1, int perPage = 18);
         // Get genre list of novel server
         Task<IEnumerable<Genre>> GetGenres();
         Task<NovelDetail> GetNovelDetail(string novelSlug);

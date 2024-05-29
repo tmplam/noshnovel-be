@@ -332,6 +332,165 @@ namespace NoshNovel.Server.TruyenFullStrategy
             return response;
         }
 
+        public async Task<NovelSearchResult> FilterByAuthor(string author, int page = 1, int perPage = 18)
+        {
+            // Calculate page and position to crawl
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
+
+            author = HelperClass.GenerateSlug(author);
+
+            // Calculate total crawled pages
+            string url = $"{baseUrl}/tac-gia/{author}/";
+            using HttpClient httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders
+                .Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                throw new RequestExeption(HttpStatusCode.NotFound, "Author not found in crawled server");
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
+
+            HtmlNode paginationNode = doc.DocumentNode.SelectSingleNode(".//ul[contains(@class, 'pagination')]");
+
+            int totalCrawlPages = 1;
+
+            if (paginationNode != null)
+            {
+                HtmlNode lastNode = paginationNode.Descendants("li")!.LastOrDefault()!.SelectSingleNode(".//a");
+                HtmlNode penultimateNode = paginationNode.Descendants("li")!.LastOrDefault()!.PreviousSibling.SelectSingleNode(".//a");
+
+                string pageString = penultimateNode.GetAttributeValue("title", "");
+
+                if (lastNode.InnerText.Trim() == "Cuối &raquo;")
+                {
+                    pageString = lastNode.GetAttributeValue("title", "");
+                }
+                string[] pageStringTokens = pageString.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                totalCrawlPages = int.Parse(pageStringTokens[pageStringTokens.Length - 1]);
+            }
+
+
+            // Crawl novel and add to list
+            int novelCountDown = perPage;
+            List<NovelItem> novelItems = new List<NovelItem>();
+
+            for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
+            {
+                url = $"{baseUrl}/tac-gia/{author}/trang-{i}";
+                requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                responseMessage = await httpClient.SendAsync(requestMessage);
+
+                if (!responseMessage.IsSuccessStatusCode)
+                {
+                    throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
+                }
+
+                htmlContent = await responseMessage.Content.ReadAsStringAsync();
+                htmlContent = WebUtility.HtmlDecode(htmlContent);
+                doc.LoadHtml(htmlContent);
+
+                HtmlNodeCollection novelNodes = doc.DocumentNode.SelectNodes("//div[@class='row' and @itemscope and @itemtype='https://schema.org/Book']");
+
+                if (novelNodes != null)
+                {
+                    for (int j = crawlPosition; j < novelNodes.Count(); j++)
+                    {
+                        NovelItem novelItem = new NovelItem();
+
+                        HtmlNode novelNode = novelNodes[j];
+                        // In case first page of genre search has 26 novels and 1 novel with no content
+                        if (novelNode.InnerHtml == "")
+                        {
+                            continue;
+                        }
+                        novelItem.CoverImage = novelNode.SelectSingleNode(".//div[@class='lazyimg']").GetAttributeValue("data-image", "");
+                        novelItem.Author = new Author()
+                        {
+                            Name = novelNode.SelectSingleNode(".//span[@class='author']").InnerText.Trim()
+                        };
+                        novelItem.NovelSlug = novelNode.SelectSingleNode(".//a[@itemprop='url']")
+                            .GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[2];
+                        novelItem.Title = novelNode.SelectSingleNode(".//a[@itemprop='url']").GetAttributeValue("title", "");
+
+                        try
+                        {
+                            string[] chapterStringTokens = novelNode.SelectSingleNode(".//span[@class='chapter-text']").ParentNode.InnerText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+                            string chapterNumString = chapterStringTokens[chapterStringTokens.Length - 1];
+                            if (chapterNumString.Contains("-"))
+                            {
+                                chapterNumString = chapterNumString.Split("-")[0];
+                            }
+                            novelItem.TotalChapter = int.Parse(chapterNumString);
+
+                        }
+                        catch (Exception)
+                        {
+                            novelItem.TotalChapter = 0;
+                        }
+
+                        novelItem.Status = novelNode.SelectSingleNode(".//span[contains(@class, 'label-full')]") != null ? "Đã hoàn thành" : "Đang ra";
+
+                        novelItems.Add(novelItem);
+
+                        if (--novelCountDown == 0)
+                        {
+                            break;
+                        }
+                    }
+                    crawlPosition = 0;
+                }
+            }
+
+            // Calculate total novels
+            url = $"{baseUrl}/tac-gia/{author}/trang-{totalCrawlPages}";
+            requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
+            }
+
+            htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+            doc.LoadHtml(htmlContent);
+            int totalNovels = 0;
+
+            HtmlNodeCollection lastPageNodes = doc.DocumentNode.SelectNodes("//div[@class='row' and @itemscope and @itemtype='https://schema.org/Book']");
+            if (lastPageNodes != null)
+            {
+                int novelOflastCrawedPage = doc.DocumentNode.SelectNodes("//div[@class='row' and @itemscope and @itemtype='https://schema.org/Book']").Count();
+                totalNovels = (totalCrawlPages - 1) * maxPerCrawlPage + novelOflastCrawedPage;
+            }
+
+            if (totalNovels > 5)
+            {
+                totalNovels--;
+            }
+
+            // Return object
+            NovelSearchResult response = new NovelSearchResult();
+            response.Page = page;
+            response.PerPage = perPage;
+            response.Total = totalNovels;
+            response.TotalPages = totalNovels / perPage + (totalNovels % perPage == 0 ? 0 : 1);
+            response.Data = novelItems;
+
+            return response;
+        }
+
         public async Task<IEnumerable<Genre>> GetGenres()
         {
             var url = baseUrl;

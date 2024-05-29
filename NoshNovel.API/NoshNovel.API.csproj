@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -25,5 +26,29 @@
     <Folder Include="Logs\" />
     <Folder Include="PluginFiles\NovelDownloaders\" />
     <Folder Include="PluginFiles\NovelCrawlers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="PluginFiles\NovelCrawlers\NoshNovel.Crawler.SanTruyenStrategy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="PluginFiles\NovelCrawlers\NoshNovel.Crawler.TangThuVienStrategy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="PluginFiles\NovelCrawlers\NoshNovel.Crawler.TruyenChuStrategy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="PluginFiles\NovelCrawlers\NoshNovel.Crawler.TruyenFullStrategy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="PluginFiles\NovelDownloaders\NoshNovel.Downloader.EpubStrategy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="PluginFiles\NovelDownloaders\NoshNovel.Downloader.PdfStrategy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="PluginFiles\NovelDownloaders\NoshNovel.Downloader.TxtStrategy.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

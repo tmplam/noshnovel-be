@@ -187,6 +187,11 @@ namespace NoshNovel.Server.TangThuVienStrategy
             return searchResult;
         }
 
+        public async Task<NovelSearchResult> FilterByAuthor(string author, int page = 1, int perPage = 18)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl
