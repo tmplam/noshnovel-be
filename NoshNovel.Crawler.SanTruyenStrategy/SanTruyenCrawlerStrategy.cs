@@ -715,11 +715,17 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     }
 
                     novel.Title = novelDetailNode.SelectSingleNode("./div[@class='story-info']/h3[@class='title']").InnerText.Trim();
-                    novel.Author = new Author()
+
+                    HtmlNode novelAuthorNode = novelDetailNode.SelectSingleNode("./div[@class='col-left']/div[@class='metas']/div/a[@itemprop='author']");
+
+                    if (novelAuthorNode != null)
                     {
-                        Name = novelDetailNode.SelectSingleNode("./div[@class='col-left']/div[@class='metas']/div/a[@itemprop='author']").InnerText.Trim(),
-                        Slug = ""
-                    };
+                        novel.Author = new Author()
+                        {
+                            Name = novelAuthorNode.InnerText.Trim(),
+                            Slug = novelAuthorNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3]
+                        };
+                    }
 
                     var description = novelDetailNode.SelectSingleNode("./div[@class='story-info']/div[@class='story-desc']").InnerHtml;
                     Regex descriptionRegex = new Regex(@"href\s*=\s*""[^""]*""");
