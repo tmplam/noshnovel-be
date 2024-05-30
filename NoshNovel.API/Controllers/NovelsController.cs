@@ -46,6 +46,18 @@ namespace NoshNovel.API.Controllers
             return Ok(response);
         }
 
+        [HttpGet, Route("author-filter")]
+        [ProducesResponseType(200, Type = typeof(NovelSearchResult))]
+        [ProducesResponseType(404, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(500, Type = typeof(ErrorResponse))]
+        public async Task<IActionResult> SearchByAuthor([FromQuery] string server, [FromQuery] string author,
+            [FromQuery] int page = 1, [FromQuery] int perPage = 18)
+        {
+            novelCrawlerContext.SetNovelCrawlerStrategy(server);
+            NovelSearchResult response = await novelCrawlerContext.FilterByAuthor(author, page, perPage);
+            return Ok(response);
+        }
+
         [HttpGet, Route("genres")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Genre>))]
         [ProducesResponseType(404, Type = typeof(ErrorResponse))]

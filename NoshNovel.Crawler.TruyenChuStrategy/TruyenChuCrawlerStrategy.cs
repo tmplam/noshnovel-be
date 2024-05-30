@@ -155,6 +155,149 @@ namespace NoshNovel.Server.TruyenChuStrategy
             return response;
         }
 
+        public async Task<NovelSearchResult> FilterByAuthor(string author, int page = 1, int perPage = 18)
+        {
+            // Calculate page and position to crawl
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
+
+            string url = $"{baseUrl}/truyen-tac-gia/{author}?page=1";
+            using HttpClient httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders
+                .Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            HttpResponseMessage responseMessage = await httpClient.SendAsync(requestMessage);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server");
+            }
+
+            string htmlContent = await responseMessage.Content.ReadAsStringAsync();
+            htmlContent = WebUtility.HtmlDecode(htmlContent);
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContent);
+
+            // Calculate total crawled pages
+            int totalNovels = 0;
+            HtmlNode totalItemNode = doc.DocumentNode.SelectSingleNode(".//p[@class='text-sm']");
+            if (totalItemNode != null)
+            {
+                string totalNovelString = totalItemNode.SelectNodes(".//span[@class='font-medium']").ElementAt(2).InnerText;
+                if (!int.TryParse(totalNovelString.Replace(".", ""), out totalNovels))
+                {
+                    throw new RequestExeption(HttpStatusCode.NotFound, "Author not found in crawled server");
+                }
+            }
+            else
+            {
+                throw new RequestExeption(HttpStatusCode.NotFound, "Author not found in crawled server");
+            }
+            int totalCrawlPages = totalNovels / maxPerCrawlPage + (totalNovels % maxPerCrawlPage == 0 ? 0 : 1);
+
+
+            // Crawl novel and add to list
+            int novelCountDown = perPage;
+            List<NovelItem> novelItems = new List<NovelItem>();
+
+            for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
+            {
+                url = $"{baseUrl}/truyen-tac-gia/{author}?page={i}";
+                requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                responseMessage = await httpClient.SendAsync(requestMessage);
+
+                if (!responseMessage.IsSuccessStatusCode)
+                {
+                    throw new RequestExeption(HttpStatusCode.NotFound, "No content found in crawled server!");
+                }
+
+                htmlContent = await responseMessage.Content.ReadAsStringAsync();
+                htmlContent = WebUtility.HtmlDecode(htmlContent);
+                doc.LoadHtml(htmlContent);
+
+                var novelNodes = doc.DocumentNode.SelectNodes("//article");
+
+                if (novelNodes != null)
+                {
+                    for (int j = crawlPosition; j < novelNodes.Count(); j++)
+                    {
+                        NovelItem novelItem = new NovelItem();
+
+                        // Get information from tag
+                        HtmlNode novelNode = novelNodes[j];
+
+                        novelItem.Description = novelNode.SelectSingleNode(".//summary").InnerText;
+
+                        HtmlNode titleNode = novelNode.SelectSingleNode(".//a[@itemprop='url']");
+
+                        novelItem.Title = titleNode.InnerText.Trim();
+                        string[] hrefTokens = titleNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.TrimEntries);
+                        novelItem.NovelSlug = hrefTokens[hrefTokens.Length - 1].Replace(".html", "");
+
+                        string[] chapterTokens = novelNode.SelectSingleNode(".//span[@class='line-clamp-1 text-sm']").InnerText.Trim().Split();
+
+                        try
+                        {
+                            novelItem.TotalChapter = int.Parse(chapterTokens[0]);
+                        }
+                        catch (Exception)
+                        {
+                            novelItem.TotalChapter = 0;
+                        }
+
+                        HtmlNode genreNode = novelNode.SelectSingleNode(".//a[@class='line-clamp-1 text-right text-sm !text-my_green hover:underline dark:!text-my_green']");
+
+                        List<Genre> genreList = new List<Genre>()
+                        {
+                            new Genre()
+                            {
+                                Name = genreNode.InnerText.Trim(),
+                                Slug = genreNode.GetAttributeValue("href", string.Empty).Trim('/')
+                            }
+                        };
+                        novelItem.Genres = genreList;
+
+                        // Take image
+                        HtmlNode noscriptNode = novelNode.SelectSingleNode(".//noscript");
+                        if (noscriptNode != null)
+                        {
+                            HtmlNode imgNode = noscriptNode.SelectSingleNode(".//img");
+                            if (imgNode != null)
+                            {
+                                // /images/no-image.webp
+                                string imageUrl = imgNode.GetAttributeValue("src", "").Trim().Split('?')[0];
+                                if (imageUrl == "/images/no-image.webp")
+                                {
+                                    imageUrl = "https://truyenchu.com.vn/images/no-image.webp";
+                                }
+                                novelItem.CoverImage = imageUrl;
+                            }
+                        }
+
+                        novelItems.Add(novelItem);
+
+                        if (--novelCountDown == 0)
+                        {
+                            break;
+                        }
+                    }
+                    crawlPosition = 0;
+                }
+            }
+
+            // Return object
+            NovelSearchResult response = new NovelSearchResult();
+            response.Page = page;
+            response.PerPage = perPage;
+            response.Total = totalNovels;
+            response.TotalPages = totalNovels / perPage + (totalNovels % perPage == 0 ? 0 : 1);
+            response.Data = novelItems;
+
+            return response;
+        }
+
         public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
             // Calculate page and position to crawl

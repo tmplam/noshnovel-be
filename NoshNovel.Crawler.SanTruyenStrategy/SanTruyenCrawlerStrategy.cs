@@ -167,7 +167,190 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     url = $"{baseUrl}/{genre}/trang-{totalCrawlPages}";
                 }
 
-                Console.WriteLine(url);
+                // Calculate total novels
+                request = new HttpRequestMessage(HttpMethod.Get, url);
+                response = httpClient.Send(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    responseContent = await response.Content.ReadAsStringAsync();
+                    // Decodes html-encoded
+                    responseContent = WebUtility.HtmlDecode(responseContent);
+                    doc.LoadHtml(responseContent);
+
+                    HtmlNodeCollection lastPageNodes = doc.DocumentNode.SelectNodes("//div[@class='stories']/div[@class='story-box']");
+
+                    int novelOflastCrawedPage = 0;
+
+                    if (lastPageNodes != null)
+                    {
+                        novelOflastCrawedPage = lastPageNodes.Count;
+                    }
+
+                    int totalNovels = (totalCrawlPages - 1) * maxPerCrawlPage + novelOflastCrawedPage;
+
+                    searchResult.Total = totalNovels;
+                    searchResult.TotalPages = totalNovels / perPage + (totalNovels % perPage == 0 ? 0 : 1);
+                }
+            }
+
+            return searchResult;
+        }
+
+        public async Task<NovelSearchResult> FilterByAuthor(string author, int page = 1, int perPage = 18)
+        {
+            int startPosition = (page - 1) * perPage + 1;
+            int firstCrawledPage = startPosition / maxPerCrawlPage + (startPosition % maxPerCrawlPage == 0 ? 0 : 1);
+            int crawlPosition = (startPosition - 1) % maxPerCrawlPage;
+
+            string url = $"{baseUrl}/tac-gia/{author}";
+
+            NovelSearchResult searchResult = new NovelSearchResult();
+            searchResult.Page = page;
+            searchResult.PerPage = perPage;
+
+            using (HttpClient httpClient = new HttpClient())
+            {
+                // make request
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                HttpResponseMessage response = await httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new RequestExeption(HttpStatusCode.NotFound, "Author not found in crawled server");
+                }
+
+                string responseContent = await response.Content.ReadAsStringAsync();
+                // decodes html-encoded
+                responseContent = WebUtility.HtmlDecode(responseContent);
+                HtmlDocument doc = new HtmlDocument();
+                doc.LoadHtml(responseContent);
+
+                HtmlNodeCollection paginationElementNodes = doc.DocumentNode.SelectNodes("//ul[@class='pagination']/li[not(contains(@class, 'dropup')) and not(descendant::span[contains(@class, 'glyphicon')])]/a");
+                HtmlNode? lastPaginationElementNode = null;
+
+                if (paginationElementNodes != null && paginationElementNodes.Count != 0)
+                {
+                    lastPaginationElementNode = paginationElementNodes[^1];
+                }
+
+                int totalCrawlPages = 1;
+
+                if (lastPaginationElementNode != null)
+                {
+                    var hrefParts = lastPaginationElementNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries);
+                    totalCrawlPages = int.Parse(hrefParts[3].Split("-")[1]);
+                }
+
+                int novelCountDown = perPage;
+                List<NovelItem> novelItems = new List<NovelItem>();
+
+                for (int i = firstCrawledPage; i <= totalCrawlPages && novelCountDown > 0; i++)
+                {
+                    if (i > 1)
+                    {
+                        // Make more requests
+                        url = $"{baseUrl}/tac-gia/{author}?paged={i}";
+                        request = new HttpRequestMessage(HttpMethod.Get, url);
+                        response = await httpClient.SendAsync(request);
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            throw new RequestExeption(HttpStatusCode.NotFound, "Author not found in crawled server");
+                        }
+
+                        responseContent = response.Content.ReadAsStringAsync().Result;
+                        // Decodes html-encoded
+                        responseContent = WebUtility.HtmlDecode(responseContent);
+                        doc.LoadHtml(responseContent);
+                    }
+
+                    HtmlNodeCollection novelNodes = doc.DocumentNode.SelectNodes("//div[@class='stories']/div[@class='story-box']");
+
+                    if (novelNodes == null)
+                    {
+                        continue;
+                    }
+
+                    for (int j = crawlPosition; j < novelNodes.Count; j++)
+                    {
+                        NovelItem novelItem = new NovelItem();
+
+                        HtmlNode novelNode = novelNodes[j];
+
+                        novelItem.Title = novelNode.SelectSingleNode("./div[@class='txt']/h3[@class='story-title']/a").InnerText.Trim();
+
+                        // Author
+                        HtmlNode authorNode = novelNode.SelectSingleNode("./div[@class='txt']/p[@itemprop='author']");
+
+                        if (authorNode != null)
+                        {
+                            novelItem.Author = new Author()
+                            {
+                                Name = authorNode.InnerText.Trim(),
+                                Slug = ""
+                            };
+                        }
+
+                        // Genre
+                        HtmlNodeCollection genreNodes = novelNode.SelectNodes("./div[@class='txt']/p[@class='story-genres']/a");
+
+                        if (genreNodes != null)
+                        {
+                            List<Genre> genres = new List<Genre>();
+
+                            foreach (var genreNode in genreNodes)
+                            {
+                                Genre novelGenre = new Genre()
+                                {
+                                    Name = genreNode.InnerText.Trim(),
+                                    Slug = genreNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[2].Trim()
+                                };
+
+                                genres.Add(novelGenre);
+                            }
+
+                            novelItem.Genres = genres;
+                        }
+
+                        novelItem.CoverImage = novelNode.SelectSingleNode("./a[@class='cover']/noscript/img").GetAttributeValue("src", "").Trim();
+                        novelItem.NovelSlug = novelNode.SelectSingleNode("./a[@class='cover']").GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[2].Trim();
+
+                        HtmlNode statusNode = novelNode.SelectSingleNode("./div[@class='txt']/p[not(contains(@class, 'story-genres')) and not(contains(@itemprop, 'author'))]/label");
+
+                        if (statusNode.GetAttributeValue("class", "").Trim() == "full-1")
+                        {
+                            novelItem.Status = "Full";
+                        }
+                        else
+                        {
+                            novelItem.Status = "Đang ra";
+                        }
+
+                        novelItem.TotalChapter = int.Parse(novelNode.SelectSingleNode("./div[@class='txt']/p/span[@class='count-chapter']").InnerText.Trim().Split(" ")[0]);
+
+                        novelItems.Add(novelItem);
+
+                        if (--novelCountDown == 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    crawlPosition = 0;
+                }
+
+                searchResult.Data = novelItems;
+
+                if (totalCrawlPages == 1)
+                {
+                    url = $"{baseUrl}/tac-gia/{author}?paged={totalCrawlPages}/";
+                }
+                else
+                {
+                    url = $"{baseUrl}/tac-gia/{author}?paged={totalCrawlPages}";
+                }
+
                 // Calculate total novels
                 request = new HttpRequestMessage(HttpMethod.Get, url);
                 response = httpClient.Send(request);

@@ -48,6 +48,23 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             return novelSearchResult;
         }
 
+        public async Task<NovelSearchResult> FilterByAuthor(string author, int page = 1, int perPage = 18)
+        {
+            LoadPlugins();
+            NovelSearchResult novelSearchResult;
+            if (novelCrawler != null)
+            {
+                novelSearchResult = await novelCrawler.FilterByAuthor(author, page, perPage);
+            }
+            else
+            {
+                throw new RequestExeption(HttpStatusCode.NotFound, "Server not found!");
+            }
+            RemovePlugin();
+
+            return novelSearchResult;
+        }
+
         public async Task<NovelSearchResult> GetByKeyword(string keyword, int page = 1, int perPage = 18)
         {
             LoadPlugins();
