@@ -5,6 +5,7 @@ using NoshNovel.Plugin.Strategies.Attributes;
 using NoshNovel.Plugin.Strategies.Exeptions;
 using NoshNovel.Plugin.Strategies.Utilities;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace NoshNovel.Server.SanTruyenStrategy
 {
@@ -897,22 +898,22 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     }
 
                     novel.Title = novelDetailNode.SelectSingleNode("./div[@class='story-info']/h3[@class='title']").InnerText.Trim();
-                    novel.Author = new Author()
-                    {
-                        Name = novelDetailNode.SelectSingleNode("./div[@class='col-left']/div[@class='metas']/div/a[@itemprop='author']").InnerText.Trim(),
-                        Slug = ""
-                    };
 
-                    HtmlNodeCollection decriptionNodes = novelDetailNode.SelectNodes("./div[@class='story-info']/div[@class='story-desc']/p");
+                    HtmlNode novelAuthorNode = novelDetailNode.SelectSingleNode("./div[@class='col-left']/div[@class='metas']/div/a[@itemprop='author']");
 
-                    for (var i = 0; i < decriptionNodes.Count - 1; i++)
+                    if (novelAuthorNode != null)
                     {
-                        if (i != 0)
+                        novel.Author = new Author()
                         {
-                            novel.Description += " ";
-                        }
-                        novel.Description += decriptionNodes[i].InnerText.Trim();
+                            Name = novelAuthorNode.InnerText.Trim(),
+                            Slug = novelAuthorNode.GetAttributeValue("href", "").Split("/", StringSplitOptions.RemoveEmptyEntries)[3]
+                        };
                     }
+
+                    var description = novelDetailNode.SelectSingleNode("./div[@class='story-info']/div[@class='story-desc']").InnerHtml;
+                    Regex descriptionRegex = new Regex(@"href\s*=\s*""[^""]*""");
+                    description = descriptionRegex.Replace(description, "href=\"#\"");
+                    novel.Description = description;
 
                     novel.Rating = double.Parse(novelDetailNode.SelectSingleNode("./div[@class='story-info']/div[@class='star-rating']/p[@class='score']/span[@itemprop='ratingValue']").InnerText.Trim());
                     novel.ReviewsNumber = int.Parse(novelDetailNode.SelectSingleNode("./div[@class='story-info']/div[@class='star-rating']/p[@class='score']/span[@itemprop='ratingCount']").InnerText.Trim());
