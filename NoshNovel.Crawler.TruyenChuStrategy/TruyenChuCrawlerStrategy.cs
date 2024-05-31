@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using NoshNovel.Plugin.Strategies.Exeptions;
+using NoshNovel.Plugin.Strategies.Utilities;
+using System.Xml.Linq;
 
 namespace NoshNovel.Server.TruyenChuStrategy
 {
@@ -657,7 +659,7 @@ namespace NoshNovel.Server.TruyenChuStrategy
                 novel.Title = infoNode.SelectSingleNode(".//h1[@itemprop='name']").InnerText.Trim();
 
                 HtmlNode authorNode = infoNode.SelectSingleNode(".//a[@itemprop='author']");
-                string[] authorTokens = authorNode.GetAttributeValue("href", "").Split('/', StringSplitOptions.RemoveEmptyEntries);
+                string[] authorTokens = authorNode.GetAttributeValue("href", string.Empty).Split('/', StringSplitOptions.RemoveEmptyEntries);
 
                 novel.Author = new Author()
                 {
@@ -670,10 +672,11 @@ namespace NoshNovel.Server.TruyenChuStrategy
                 List<Genre> genres = new List<Genre>();
                 foreach (var genreNode in genreNodes)
                 {
+                    var genreName = genreNode.InnerText.Trim();
                     Genre genre = new Genre()
                     {
-                        Name = genreNode.InnerText.Trim(),
-                        Slug = genreNode.GetAttributeValue("href", string.Empty).Trim('/')
+                        Name = genreName,
+                        Slug = HelperClass.GenerateSlug(genreName)
                     };
                     genres.Add(genre);
                 }

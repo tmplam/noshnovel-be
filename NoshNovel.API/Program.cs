@@ -48,11 +48,11 @@ builder.Services.AddSingleton<IPluginWatcher, PluginWatcher>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+app.UseSwagger();
+app.UseSwaggerUI();
+//}
 
 // Add cors policy
 app.UseCors("AllowAllOrigins");
