@@ -28,7 +28,7 @@ namespace NoshNovel.Plugin.Contexts.NovelDownloader
             }
         }
 
-        public void LoadPlugins()
+        private void LoadPlugins()
         {
             foreach (var dllFilePath in Directory.GetFiles(Path.Join(Directory.GetCurrentDirectory(),
                 pluginPath), "*.dll"))
@@ -75,7 +75,7 @@ namespace NoshNovel.Plugin.Contexts.NovelDownloader
             }
         }
 
-        public void RemovePlugin()
+        private void RemovePlugin()
         {
             novelDownloader = null;
             if (weakReference != null)

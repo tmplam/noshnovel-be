@@ -28,7 +28,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
         }
 
-        public void LoadPlugins()
+        private void LoadPlugins()
         {
             foreach (var dllFilePath in Directory.GetFiles(Path.Join(Directory.GetCurrentDirectory(), 
                 pluginPath), "*.dll"))
@@ -75,7 +75,7 @@ namespace NoshNovel.Plugin.Contexts.NovelCrawler
             }
         }
 
-        public void RemovePlugin()
+        private void RemovePlugin()
         {
             novelCrawler = null;
             if (weakReference != null)

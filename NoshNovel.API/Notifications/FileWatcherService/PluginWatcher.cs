@@ -50,9 +50,6 @@ namespace NoshNovel.API.Notifications.FileWatcherService
 
         private async void NotifyOnNovelServerUpdate(object sender, FileSystemEventArgs e)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Server Update!!!");
-            Console.ResetColor();
             await hubContext.Clients.All.SendAsync("NovelServerUpdate");
         }
 
