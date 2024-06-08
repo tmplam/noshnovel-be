@@ -23,7 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoshNovel.Downloader.PdfStr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoshNovel.Downloader.TxtStrategy", "NoshNovel.Downloader.TxtStrategy\NoshNovel.Downloader.TxtStrategy.csproj", "{C7521294-C2CB-4A8E-BC79-89C77C25B46C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Crawler.SanTruyenStrategy", "NoshNovel.Crawler.SanTruyenStrategy\NoshNovel.Crawler.SanTruyenStrategy.csproj", "{3DC32ECE-E417-4B22-B8E0-67CBCF82A39D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoshNovel.Crawler.SanTruyenStrategy", "NoshNovel.Crawler.SanTruyenStrategy\NoshNovel.Crawler.SanTruyenStrategy.csproj", "{3DC32ECE-E417-4B22-B8E0-67CBCF82A39D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoshNovel.Tests", "NoshNovel.Tests\NoshNovel.Tests.csproj", "{5D567826-414D-4C7A-9F55-4BE28020F99C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{3DC32ECE-E417-4B22-B8E0-67CBCF82A39D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DC32ECE-E417-4B22-B8E0-67CBCF82A39D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DC32ECE-E417-4B22-B8E0-67CBCF82A39D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D567826-414D-4C7A-9F55-4BE28020F99C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D567826-414D-4C7A-9F55-4BE28020F99C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D567826-414D-4C7A-9F55-4BE28020F99C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D567826-414D-4C7A-9F55-4BE28020F99C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
