@@ -860,6 +860,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     if (contentNode != null)
                     {
                         novelContent.Content = contentNode.InnerHtml;
+                        novelContent.Content = novelContent.Content.Replace("<br>\n", "<br>");
                     }
                 }
                 else
