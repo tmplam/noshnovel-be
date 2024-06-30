@@ -817,7 +817,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     HtmlDocument doc = new HtmlDocument();
                     doc.LoadHtml(responseContent);
 
-                    HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("//a[@class='story-title']");
+                    HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("//h1[@class='story-title']/a");
 
                     if (titleNode != null)
                     {
@@ -827,7 +827,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                     string chapterLabel = string.Empty;
                     string chapterName = string.Empty;
 
-                    HtmlNode chapterTitlePartsNode = doc.DocumentNode.SelectSingleNode("//a[@class='chapter-title']");
+                    HtmlNode chapterTitlePartsNode = doc.DocumentNode.SelectSingleNode("//h2[@class='chapter-title']/a");
 
                     if (chapterTitlePartsNode != null)
                     {
@@ -898,7 +898,7 @@ namespace NoshNovel.Server.SanTruyenStrategy
                         throw new RequestExeption(HttpStatusCode.NotFound, "Novel not found in crawled server");
                     }
 
-                    novel.Title = novelDetailNode.SelectSingleNode("./div[@class='story-info']/h3[@class='title']").InnerText.Trim();
+                    novel.Title = novelDetailNode.SelectSingleNode("./div[@class='story-info']/h2[@class='title']").InnerText.Trim();
 
                     HtmlNode novelAuthorNode = novelDetailNode.SelectSingleNode("./div[@class='col-left']/div[@class='metas']/div/a[@itemprop='author']");
 
