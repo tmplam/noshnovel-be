@@ -6,6 +6,10 @@
 -   The project doesn't have any database, the data it uses is crawled from other pages like _[truyenfull.vn](https://truyenfull.vn/ 'Truyện full')_, _[truyen.tangthuvien.vn](https://truyen.tangthuvien.vn/ 'Tàng thư viện')_, ...
 -   This project allows you to add / remove a crawled server in runtime (hot plug) as well as add / remove a novel download format.
 
+## Frontend source
+
+-   You can find frontend source of this project here: _[noshnovel-fe](https://github.com/tmplam/noshnovel-fe/ 'NoshNovel Frontend')_
+
 ## How to add dll plugin file to project?
 
 > 1. Go to `NoshNovel.API/PluginFiles`.
